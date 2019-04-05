@@ -27,6 +27,14 @@ mkdir -p /tmp/det
 
 The resultant annotations will be stored in `/tmp/det` as `.txt` files.
 
+The format of the output `.txt` file is as follows:
+
+```bash
+filename    # full image path
+cx cy w h p # text header, field names
+cx cy w h p # one row per box, in relative coordinates. p=confidence in [0-1] interval
+```
+
 ## 4. Manually Inspect and correct the annotations
 
 First, record the responses:
@@ -50,7 +58,13 @@ Then apply the responses:
 python apply_responses.py
 ```
 
-## 5. Convert 
+This should store the results in `dataset/`
+
+## 5. Convert To TFRecords
+
+```bash
+python tfrec.py
+```
 
 [1]: https://github.com/hardikvasa/google-images-download
 [2]: https://github.com/chuanenlin/drone-net
