@@ -32,9 +32,16 @@ def inter_filename(ref, fs):
     msk = np.in1d(fn, ref)
     return fn, fs[~msk]
 
-def genhash():
-    #droot = '/home/jamie/Miscellaneous/download_drone/data3'
-    droot = '/media/ssd/datasets/drones/'
+def genhash(
+        droot='/media/ssd/datasets/drones/raw',
+        hash_file='/tmp/hs.npy',
+        force=False
+        ):
+
+    if (not force) and os.path.exists(hash_file):
+        print('Hash file {} already exists'.format(hash_file) )
+        return
+
     ds = os.listdir(droot)
     ds = [os.path.join(droot, d) for d in ds]
     fs = [os.listdir(d) for d in ds]
@@ -94,9 +101,8 @@ def genhash():
                 print '[{}] = {}%'.format(cnt, 100*cnt/float(itot))
         #h = [dhash(cv2.imread(os.path.join(d,e))) for e in f]
         hs.append(h)
-        #if cnt > 1500:
-        #    break
-    np.save('/tmp/hs.npy', hs)
+
+    np.save(hash_file, hs)
 
 def putText(img, txt, loc):
     font                   = cv2.FONT_HERSHEY_SIMPLEX
@@ -110,8 +116,13 @@ def putText(img, txt, loc):
         fontColor,
         lineType)
 
-def main():
-    hs = np.load('hs.npy')
+def annotate(
+        droot='/media/ssd/datasets/drones/raw',
+        hash_file='/tmp/hs.npy',
+        uout_dir='/tmp/u/',
+        show=False
+        ):
+    hs = np.load(hash_file)
     n = len(hs)
 
     ixn = np.empty((n,n), dtype=object)
@@ -156,22 +167,31 @@ def main():
     for i in range(n):
         unqs.extend( np.array(ks[i])[msks[i]] )
 
-    if not os.path.exists('/tmp/u'):
-        os.makedirs('/tmp/u/')
+    if not os.path.exists(uout_dir):
+        os.makedirs(uout_dir)
 
-    droot = '/media/ssd/datasets/drones/raw'
     idx = 0
     for u in unqs:
-        print '????', os.path.join(droot, u)
         if cv2.imread(os.path.join(droot, u)) is None:
+            # image read failure
             continue
-        shutil.copyfile(os.path.join(droot, u), '/tmp/u/{:05d}.jpg'.format(idx))
+
+        # NOTE: this enforces that the output format is JPEG.
+        cv2.imwrite(
+                os.path.join(uout_dir, '{:05d}.jpg'.format(idx)))
+        #shutil.copyfile(
+        #        os.path.join(droot, u),
+        #        os.path.join(uout_dir, '{:05d}.jpg'.format(idx))
+        #        )
         idx += 1
     print 'idx', idx
 
     print 'unique', np.sum([np.sum(m) for m in msks])
     print 'unique', len(unqs)
     print 'total',  np.sum([np.size(m) for m in msks])
+
+    if not show:
+        return
 
     cv2.namedWindow('match', cv2.WINDOW_NORMAL)
     for i in range(n):
@@ -205,6 +225,9 @@ def main():
                 if k == ord('q'):
                     return
 
+def main():
+    genhash(force=False)
+    annotate()
+
 if __name__ == "__main__":
     main()
-    #genhash()
