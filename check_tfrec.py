@@ -15,7 +15,8 @@ def draw_box(img, box):
 
 def main():
     tf.enable_eager_execution()
-    rec = tf.data.TFRecordDataset('./drone.record')
+    #rec = tf.data.TFRecordDataset('./drone.record')
+    rec = tf.data.TFRecordDataset('./drone-net.record')
 
     proto ={
             'image/height': tf.FixedLenFeature([], tf.int64),

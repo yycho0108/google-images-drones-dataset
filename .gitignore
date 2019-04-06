@@ -216,3 +216,7 @@ ann_proc/
 *.npy
 count.txt
 drone.record
+
+drone-net-ann/
+drone-net-img/
+drone-net.record

@@ -135,10 +135,14 @@ def to_tf(img_file, boxs):
 
 def main():
     #ann_folder  = '/media/ssd/datasets/drones/ann/'
-    ann_folder  = '/media/ssd/datasets/drones/ann_proc/'
-    img_path    = '/media/ssd/datasets/drones/all/'
-    #output_path = '/tmp/drone.record'
-    output_path = '/media/ssd/datasets/drones/drone.record'
+
+    #ann_folder  = '/media/ssd/datasets/drones/ann_proc/'
+    #img_path    = '/media/ssd/datasets/drones/all/'
+    #output_path = '/media/ssd/datasets/drones/drone.record'
+
+    ann_folder  = '/media/ssd/datasets/drones/drone-net-ann/'
+    img_path    = '/media/ssd/datasets/drones/drone-net-img/'
+    output_path = '/media/ssd/datasets/drones/drone-net.record'
 
     writer = tf.python_io.TFRecordWriter(output_path)
 
