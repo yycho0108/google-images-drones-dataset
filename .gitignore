@@ -212,5 +212,7 @@ tags
 all/
 ann/
 raw/
+ann_proc/
 *.npy
 count.txt
+drone.record

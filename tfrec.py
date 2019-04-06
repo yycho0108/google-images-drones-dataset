@@ -108,7 +108,7 @@ def to_tf(img_file, boxs):
     classes = []
 
     for box in boxs:
-        cx, cy, w, h, _ = box
+        cx, cy, w, h = box[:4]
         xmins.append(cx - (w/2.0))
         xmaxs.append(cx + (w/2.0))
         ymins.append(cy - (h/2.0))
@@ -134,19 +134,20 @@ def to_tf(img_file, boxs):
     return tf_example
 
 def main():
-    ann_folder  = '/media/ssd/datasets/drones/ann/'
+    #ann_folder  = '/media/ssd/datasets/drones/ann/'
+    ann_folder  = '/media/ssd/datasets/drones/ann_proc/'
     img_path    = '/media/ssd/datasets/drones/all/'
-    output_path = '/tmp/drone.record'
+    #output_path = '/tmp/drone.record'
+    output_path = '/media/ssd/datasets/drones/drone.record'
 
     writer = tf.python_io.TFRecordWriter(output_path)
 
     for f_ann in os.listdir(ann_folder):
         ls = open(os.path.join(ann_folder, f_ann)).readlines()
         img_file = ls[0][:-1]
-        boxs     = ls[2:]
+        boxs     = [[float(e) for e in s.split(' ')] for s in ls[2:]]
         tfrec    = to_tf(img_file, boxs)
         writer.write( tfrec.SerializeToString() )
-        break
     writer.close()
 
     #input_file = ''
