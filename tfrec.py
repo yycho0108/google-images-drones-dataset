@@ -114,7 +114,7 @@ def to_tf(img_file, boxs):
         ymins.append(cy - (h/2.0))
         ymaxs.append(cy + (h/2.0))
         classes_text.append('drone')
-        classes.append( 0 )
+        classes.append( 1 )
         #classes.append(class_text_to_int(row['class']))
 
     tf_example = tf.train.Example(features=tf.train.Features(feature={

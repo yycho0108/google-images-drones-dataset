@@ -220,3 +220,5 @@ drone.record
 drone-net-ann/
 drone-net-img/
 drone-net.record
+
+training_demo/
