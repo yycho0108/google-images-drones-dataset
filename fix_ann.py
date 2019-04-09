@@ -132,8 +132,8 @@ class BBoxGrabber(object):
 
 def bbox_gui(droot, f_lbl, fsr,
         do_o=False,
-        do_x=False,
-        do_s=True
+        do_x=True,
+        do_s=False
         ):
     label = np.load(f_lbl)
     label = label.astype(str)
@@ -267,6 +267,7 @@ def bbox_gui(droot, f_lbl, fsr,
         # write converted results
         if not os.path.exists('/tmp/s'):
             os.makedirs('/tmp/s')
+
         for (i, (f, box) ) in enumerate( zip(fsr_s, boxs) ):
             l = open(os.path.join(droot, f)).readlines()
             imf = l[0][:-1]
@@ -275,6 +276,17 @@ def bbox_gui(droot, f_lbl, fsr,
                 for b in box:
                     bcx, bcy, bw, bh = b
                     fout.write('{} {} {} {} {}\n'.format(bcx,bcy,bw,bh,1))
+        # write the images
+        #if not os.path.exists('/tmp/simg'):
+        #    os.makedirs('/tmp/simg')
+        #for (i, f) in enumerate(fsr_s):
+        #    l = open(os.path.join(droot, f)).readlines()
+        #    imf = l[0][:-1]
+
+        #    shutil.copyfile(imf,
+        #            os.path.join('/tmp/simg', '{}.jpg'.format(i))
+        #            )
+
 
 
 def main():
@@ -288,8 +300,8 @@ def main():
     fsp = fs[pos_msk]
     fsn = fs[~pos_msk]
 
-    do_pos = True
-    #do_pos = False
+    #do_pos = True
+    do_pos = False
 
     if do_pos:
         f_lbl = 'ann_pos_lbl.npy'
@@ -300,8 +312,8 @@ def main():
         f_idx = 'ann_neg_idx.npy'
         fsr = fsn
 
-    #ok_gui(droot, f_lbl, f_idx, fsr)
-    bbox_gui(droot, f_lbl, fsr)
+    ok_gui(droot, f_lbl, f_idx, fsr)
+    #bbox_gui(droot, f_lbl, fsr)
 
 if __name__ == "__main__":
     main()

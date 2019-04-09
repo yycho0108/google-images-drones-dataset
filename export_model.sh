@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-CUDA_VISIBLE_DEVICES=''
 TF_MODELS_PATH="${HOME}/Repos/models/research/"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH/slim/"
@@ -15,7 +14,7 @@ echo "USING CHECKPOINT : $TRAINED_CKPT_PREFIX"
 EXPORT_DIR='/tmp/model'
 PYFILE="${HOME}/Repos/models/research/object_detection/export_inference_graph.py"
 
-CUDA_VISIBLE_DEVICES='' python ${PYFILE} \
+python ${PYFILE} \
     --input_type=${INPUT_TYPE} \
     --pipeline_config_path=${PIPELINE_CONFIG_PATH} \
     --trained_checkpoint_prefix=${TRAINED_CKPT_PREFIX} \
