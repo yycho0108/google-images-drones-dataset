@@ -61,6 +61,9 @@ def main(_):
     imgs = []
     sfs  = []
     for fidx, f in enumerate(fs):
+        if (fidx % 100) == 0:
+            print('{}/{}: {}'.format(fidx, tot, oidx))
+
         f = os.path.join(imgdir, f)
         img = cv2.imread(f)
         if img is None:
@@ -115,9 +118,6 @@ def main(_):
                 k = cv2.waitKey(0)
                 if k in [27, ord('q')]:
                     return
-
-        if (fidx % 100) == 0:
-            print('{}/{}: {}'.format(fidx,tot, oidx))
 
     if viz:
         cv2.destroyWindow('win')

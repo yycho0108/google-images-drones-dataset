@@ -140,16 +140,13 @@ def main():
     #ann_folder  = '/media/ssd/datasets/drones/ann/'
 
     #ann_folder  = '/media/ssd/datasets/drones/ann_proc/'
-    #img_path    = '/media/ssd/datasets/drones/all/'
     #output_path = '/media/ssd/datasets/drones/drone.record'
 
     #ann_folder  = '/media/ssd/datasets/drones/drone-net-ann/'
-    #img_path    = '/media/ssd/datasets/drones/drone-net-img/'
     #output_path = '/media/ssd/datasets/drones/drone-net.record'
 
-    ann_folder  = '/tmp/ximgann/'
-    img_path    = '/tmp/ximg/'
-    output_path = '/tmp/ximg.record'
+    ann_folder  = '/tmp/ann-png'
+    output_path = '/tmp/png.record'
 
     writer = tf.python_io.TFRecordWriter(output_path)
 

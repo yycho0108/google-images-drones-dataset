@@ -17,7 +17,8 @@ def main():
     tf.enable_eager_execution()
     #rec = tf.data.TFRecordDataset('./drone.record')
     #rec = tf.data.TFRecordDataset('./drone-net.record')
-    rec = tf.data.TFRecordDataset('./ximg.record')
+    #rec = tf.data.TFRecordDataset('./ximg.record')
+    rec = tf.data.TFRecordDataset('./png.record')
 
     proto ={
             'image/height': tf.FixedLenFeature([], tf.int64),
