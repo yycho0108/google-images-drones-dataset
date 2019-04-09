@@ -4,10 +4,10 @@ AUTOPATH=1
 TF_MODELS_PATH="${HOME}/Repos/models/research/"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH/slim/"
-TRAIN_PATH='./training_demo/training3'
+TRAIN_PATH='./training_demo/training4'
 
 INPUT_TYPE=image_tensor
-PIPELINE_CONFIG_PATH='./training_demo/training3/pipeline.config'
+PIPELINE_CONFIG_PATH='./pipeline.config'
 #PIPELINE_CONFIG_PATH='/tmp/pipeline.config'
 
 if [ "$AUTOPATH" -ne "0" ]; then
@@ -21,7 +21,7 @@ else
 fi
 
 echo "USING CHECKPOINT : $TRAINED_CKPT_PREFIX"
-EXPORT_DIR='/tmp/model2'
+EXPORT_DIR='/tmp/model'
 
 if [ -d "$EXPORT_DIR" ]; then
   # Control will enter here if $DIRECTORY exists.

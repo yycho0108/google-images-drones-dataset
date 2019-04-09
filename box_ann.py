@@ -51,6 +51,9 @@ def main(_):
 
     fs = os.listdir(imgdir)
     fs = sorted(fs)
+    print('FS len : {}'.format(len(fs)))
+    if len(fs) > 0:
+        print('FS Sample : {}'.format(fs[0]))
 
     oidx = 0
     tot = len(fs)

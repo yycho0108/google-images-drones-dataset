@@ -184,12 +184,13 @@ def test_images():
     Simple test script; requires /tmp/image1.jpg
     """
     #app = ObjectDetectorTF()
-    app = ObjectDetectorTF(model='model2')
+    app = ObjectDetectorTF(use_gpu=True, model='model')
 
     #imgdir = '/tmp/simg'
     imgdir = os.path.expanduser(
             #'~/libs/drone-net/image'
             '/media/ssd/datasets/drones/data-png/ quadcopter'
+            #"/media/ssd/datasets/youtube_box/train/0"
             )
 
     cv2.namedWindow('win', cv2.WINDOW_NORMAL)
@@ -206,6 +207,8 @@ def test_images():
         h,w = img.shape[:2]
         res = app(img)
         msk = (res['score'] > 0.5)
+        #if np.count_nonzero(msk) <= 0:
+        #    continue
 
         cls   = res['class'][msk]
         box   = res['box'][msk]
@@ -214,7 +217,6 @@ def test_images():
         print('scores', score)
 
         for box_, cls_ in zip(box, cls):
-            #ry0,rx0,ry1,rx1 = box_ # relative
             draw_bbox(img, box_, str(cls_))
 
         cv2.imshow('win', img)

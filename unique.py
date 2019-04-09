@@ -118,7 +118,7 @@ def write_unique(
     u8bc = np.unpackbits(np.arange(256,dtype=np.uint8)).reshape(256,-1).sum(axis=-1, dtype=np.uint8)# u8 bit-count
     hd = np.empty(dtype=np.uint8, shape=xx.shape)
     i0 = 0
-    cs = 4096 
+    cs = 2048
     xxu8 = xx.view(np.uint8).reshape(n,m,8)
     while True: # try to be good about memory consumption
         print('{}/{}'.format(i0, len(xx)))
@@ -235,19 +235,21 @@ def query_yes_no(question, default="yes"):
 
 def main():
     # optional: compute reference hash
-    #droot    = '/media/ssd/datasets/drones/all'
     #droot    = '/media/ssd/datasets/drones/raw'
+    #droot    = '/media/ssd/datasets/drones/all'
+    #hash_file= '/tmp/hs-ref.npy'
+    #ref_hs   = None
 
     #droot     = '/media/ssd/datasets/drones/data-png/ quadcopter'
     #hash_file = '/tmp/hs-quad-png.npy'
     #ref_hs    = None
 
-    droot     = '/tmp/quad-jpg/'
-    hash_file = '/tmp/hs-quad-jpg.npy'
-    ref_hs    = np.load('/tmp/hs-quad-png.npy').item()
+    droot     = '/media/ssd/datasets/drones/data-png/'
+    hash_file = '/tmp/hs-png.npy'
+    ref_hs    = np.load('/tmp/hs-ref.npy').item()
 
     #uout_dir  = '/tmp/u'
-    uout_dir  = None
+    uout_dir  = '/tmp/u-png'
     max_hd    = 5
 
     #droot     = '~/libs/drone-net/image/' # data root
