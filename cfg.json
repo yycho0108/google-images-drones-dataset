@@ -2,29 +2,29 @@
     "Records" : [
         {
             "keywords": "quadcopter",
-            "prefix_keywords" : ",blade,cheerson,dji,estes,syma,udirc,3dr,uvify,hubsan,parrot,yuneec,autel,gdu,freefly,walkera,matternet,traxxas,potensic",
+            "prefix_keywords" : ",blade,cheerson,dji,estes,syma,udirc,3dr,uvify,hubsan,parrot,yuneec,autel,gdu,freefly,walkera,matternet,traxxas,potensic,skydio",
             "limit": "10000" ,
-            "format": "jpg" ,
+            "format": "png" ,
             "color_type": "full-color" ,
-            "output_directory": "/home/jamie/Miscellaneous/download_drone/data3",
+            "output_directory": "/media/ssd/datasets/drones/data-png",
             "chromedriver" : "/usr/bin/chromedriver"
         },
         {
             "keywords": "hexacopter",
-            "prefix_keywords" : ",blade,cheerson,dji,estes,syma,udirc,3dr,uvify,hubsan,parrot,yuneec,autel,gdu,freefly,walkera,matternet,traxxas,potensic",
+            "prefix_keywords" : ",blade,cheerson,dji,estes,syma,udirc,3dr,uvify,hubsan,parrot,yuneec,autel,gdu,freefly,walkera,matternet,traxxas,potensic,skydio",
             "limit": "10000" ,
-            "format": "jpg" ,
+            "format": "png" ,
             "color_type": "full-color" ,
-            "output_directory": "/home/jamie/Miscellaneous/download_drone/data3",
+            "output_directory": "/media/ssd/datasets/drones/data-png",
             "chromedriver" : "/usr/bin/chromedriver"
         },
         {
             "keywords": "drone",
-            "prefix_keywords" : ",blade,cheerson,dji,estes,syma,udirc,3dr,uvify,hubsan,parrot,yuneec,autel,gdu,freefly,walkera,matternet,traxxas,potensic",
+            "prefix_keywords" : ",blade,cheerson,dji,estes,syma,udirc,3dr,uvify,hubsan,parrot,yuneec,autel,gdu,freefly,walkera,matternet,traxxas,potensic,skydio",
             "limit": "10000" ,
-            "format": "jpg" ,
+            "format": "png" ,
             "color_type": "full-color" ,
-            "output_directory": "/home/jamie/Miscellaneous/download_drone/data3",
+            "output_directory": "/media/ssd/datasets/drones/data-png",
             "chromedriver" : "/usr/bin/chromedriver"
         }
     ]

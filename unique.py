@@ -62,7 +62,8 @@ def genhash(
         else:
             # file
             h = hash_file(d)
-            hs[d] = h
+            if h is not None:
+                hs[d] = h
         if (i % 100) == 0:
             dstr = ('\"' if i>0 else droot) # avoid repeating same string
             print '{}H({}) : {}/{}'.format('\t'*level, dstr, i, n)
@@ -139,26 +140,29 @@ def write_unique(
     dup0, dup1 = ks0[i_dup], ks1[j_dup]
     hd_dup = hd[i_dup, j_dup]
 
-    if not os.path.exists(uout_dir):
-        os.makedirs(uout_dir)
-
-    idx = 0
-    for u in unqs:
-        img = cv2.imread(u)
-        if img is None:
-            # image read failure
-            continue
-        # NOTE: this enforces that the output format is JPEG.
-        cv2.imwrite(
-                os.path.join(uout_dir, '{:05d}.jpg'.format(idx)), img)
-        # Alternative(fast) :
-        #shutil.copyfile(
-        #        os.path.join(droot, u),
-        #        os.path.join(uout_dir, '{:05d}.jpg'.format(idx))
-        #        )
-        idx += 1
-        if idx%100 == 0:
-            print('write {}/{}'.format(idx,n))
+    if uout_dir is not None:
+        # output unique image files to uout_dir
+        if not os.path.exists(uout_dir):
+            os.makedirs(uout_dir)
+        idx = 0
+        for u in unqs:
+            img = cv2.imread(u)
+            if img is None:
+                # image read failure
+                continue
+            # NOTE: this enforces that the output format is JPEG.
+            cv2.imwrite(
+                    os.path.join(uout_dir, '{:05d}.jpg'.format(idx)), img)
+            # Alternative(fast) :
+            #shutil.copyfile(
+            #        os.path.join(droot, u),
+            #        os.path.join(uout_dir, '{:05d}.jpg'.format(idx))
+            #        )
+            idx += 1
+            if idx%100 == 0:
+                print('write {}/{}'.format(idx,n))
+    else:
+        idx = n
 
     print 'idx', idx
     print 'total', n
@@ -231,11 +235,19 @@ def query_yes_no(question, default="yes"):
 
 def main():
     # optional: compute reference hash
-    #droot     = '/media/ssd/datasets/drones/all'
-    droot     = '/media/ssd/datasets/drones/raw'
-    hash_file = '/tmp/hs-ref.npy'
-    ref_hs    = None
-    uout_dir  = '/tmp/u'
+    #droot    = '/media/ssd/datasets/drones/all'
+    #droot    = '/media/ssd/datasets/drones/raw'
+
+    #droot     = '/media/ssd/datasets/drones/data-png/ quadcopter'
+    #hash_file = '/tmp/hs-quad-png.npy'
+    #ref_hs    = None
+
+    droot     = '/tmp/quad-jpg/'
+    hash_file = '/tmp/hs-quad-jpg.npy'
+    ref_hs    = np.load('/tmp/hs-quad-png.npy').item()
+
+    #uout_dir  = '/tmp/u'
+    uout_dir  = None
     max_hd    = 5
 
     #droot     = '~/libs/drone-net/image/' # data root
