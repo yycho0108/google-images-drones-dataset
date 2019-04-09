@@ -58,41 +58,16 @@ def genhash(
         if os.path.isdir(d):
             # directory
             if recursive:
-                hs.update(genhash(d,force,recursive,level+1))
+                hs.update(genhash(d,recursive,level+1))
         else:
             # file
             h = hash_file(d)
             hs[d] = h
         if (i % 100) == 0:
-            print '{}H({}) : {}/{}'.format('\t'*level, droot, i, n)
+            dstr = ('\"' if i>0 else droot) # avoid repeating same string
+            print '{}H({}) : {}/{}'.format('\t'*level, dstr, i, n)
 
     return hs
-
-    #itot = len(hs)
-    #print 'initial # files : {}'.format(itot)
-    #hs=[]
-    #cnt=0
-    #for d, f in zip(ds, fs):
-    #    b = os.path.basename(d)
-    #    h = {}
-    #    for e in f:
-    #        k = os.path.join(b,e)
-    #        p = os.path.join(d,e)
-    #        #v = dhash(cv2.imread(p))
-    #        img = cv2.imread(p)
-    #        if img is None:
-    #            continue
-    #        v = np.frombuffer(hasher.compute(img), dtype=np.uint64)
-    #        if v is None: #??
-    #            continue
-    #        h[k]=v
-    #        cnt += 1
-    #        if cnt % 100 == 0:
-    #            print '[{}] = {}%'.format(cnt, 100*cnt/float(itot))
-    #    #h = [dhash(cv2.imread(os.path.join(d,e))) for e in f]
-    #    hs.append(h)
-    #return hs
-    #np.save(hash_file, hs)
 
 def putText(img, txt, loc):
     font                   = cv2.FONT_HERSHEY_SIMPLEX
@@ -106,11 +81,11 @@ def putText(img, txt, loc):
         fontColor,
         lineType)
 
-def annotate(
+def write_unique(
         hs,
         ref_hs=None,
         uout_dir='/tmp/u/',
-        min_hd=5,
+        max_hd=5,
         show=False
         ):
     # input
@@ -153,7 +128,7 @@ def annotate(
         i0 = i1
 
     idx_i = np.arange(n)
-    idx_j = np.less_equal(hd, min_hd).argmax(axis=-1) # == "first match"
+    idx_j = np.less_equal(hd, max_hd).argmax(axis=-1) # == "first match"
     dup_msk = np.greater(idx_i, idx_j)
     
     i_dup = idx_i[dup_msk]
@@ -257,17 +232,22 @@ def query_yes_no(question, default="yes"):
 def main():
     # optional: compute reference hash
     #droot     = '/media/ssd/datasets/drones/all'
-    #hash_file = '/tmp/hs-ref.npy'
+    droot     = '/media/ssd/datasets/drones/raw'
+    hash_file = '/tmp/hs-ref.npy'
+    ref_hs    = None
+    uout_dir  = '/tmp/u'
+    max_hd    = 5
 
-    droot     = '~/libs/drone-net/image/'
-    hash_file = '/tmp/hs.npy'
-    ref_hs    = np.load('/tmp/hs-ref.npy').item()
+    #droot     = '~/libs/drone-net/image/' # data root
+    #hash_file = '/tmp/hs.npy' # hash file
+    #ref_hs    = np.load('/tmp/hs-ref.npy').item() # (optional) hash reference
+    #uout_dir  = '/tmp/u' # where to write the 'unique' images
+    #max_hd    = 5 # max hash distance for image matching
 
     # determine hash read flag
     read_hash = False
     if os.path.exists(hash_file):
         read_hash = query_yes_no('Load existing hash file at {}?'.format(hash_file))
-
     # load-or-compute-hash
     if read_hash:
         hs = np.load(hash_file).item() # << necessary to convert to dict
@@ -283,7 +263,10 @@ def main():
         np.save(hash_file, hs)
         print('Hash file saved at: {}'.format(hash_file) )
 
-    annotate(hs, ref_hs=ref_hs, show=True)
+    write_unique(hs, ref_hs=ref_hs,
+            uout_dir=uout_dir,
+            max_hd=max_hd,
+            show=True)
 
 if __name__ == "__main__":
     main()
