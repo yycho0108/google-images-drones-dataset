@@ -68,6 +68,24 @@ This should store the results in `dataset/`
 python tfrec.py
 ```
 
+## 6. Training
+
+```bash
+python train.py --logtostderr --train_dir=training3/ --pipeline_config_path=pipeline-fpn.config
+```
+
+## 7. Export model
+
+```bash
+bash export_model.sh
+```
+
+## 8. Testing
+
+```bash
+python object_detection_tf.py
+```
+
 [1]: https://github.com/hardikvasa/google-images-download
 [2]: https://github.com/chuanenlin/drone-net
 [3]: https://github.com/pjreddie/darknet
