@@ -1,36 +1,63 @@
+#!/usr/bin/env python2
+"""
+Produce Bounding-Box annotations with a detector network.
+"""
 import os
 import sys
 import numpy as np
 import cv2
 from object_detection_tf import ObjectDetectorTF
 from utils import draw_bbox
+import tensorflow as tf
 
-def main():
-    app    = ObjectDetectorTF(use_gpu=True, model='model2')
-    imgdir = '/tmp/ximg'
-    viz    = False
-    thresh = 0.95
-    anndir = '/tmp/ximgann'
-    batch  = 16
-    shape  = (640,640)
+tf.logging.set_verbosity(tf.logging.INFO)
+flags = tf.app.flags
+
+flags.DEFINE_string('root', '/tmp',
+        'Root Directory')
+flags.DEFINE_string('model', 'model',
+        'Model Directory')
+flags.DEFINE_integer('batch_size', 16,
+        'Number of Batches to run in parallel')
+flags.DEFINE_boolean('viz', False,
+        'Enable Runtime Visualization')
+flags.DEFINE_float('thresh', 0.95,
+        'Bounding-Box Detection Confidence Threshold')
+flags.DEFINE_boolean('use_gpu', True,
+        'Use GPU')
+flags.DEFINE_string('img_dir', '/tmp/ximg',
+        'Source Image Directory')
+flags.DEFINE_string('out_dir', '/tmp/ann',
+        'Output Annotations Directory')
+FLAGS = flags.FLAGS
+
+def main(_):
+    app    = ObjectDetectorTF(
+            root=FLAGS.root,
+            use_gpu=FLAGS.use_gpu,
+            model=FLAGS.model
+            )
+    imgdir = FLAGS.img_dir
+    viz    = FLAGS.viz
+    thresh = FLAGS.thresh
+    anndir = FLAGS.out_dir
+    batch  = FLAGS.batch_size
+    shape  = (640,640) # TODO : figure this out from model directory pipeline.config??
 
     if not os.path.exists(anndir):
         os.makedirs(anndir)
-
     if viz:
         cv2.namedWindow('win', cv2.WINDOW_NORMAL)
 
     fs = os.listdir(imgdir)
-    #np.random.shuffle(fs)
-    #fs = ['/tmp/ximg/7703.jpg' for _ in range(batch)]
     fs = sorted(fs)
 
-    idx = 0
+    oidx = 0
     tot = len(fs)
 
     imgs = []
     sfs  = []
-    for fi, f in enumerate(fs):
+    for fidx, f in enumerate(fs):
         f = os.path.join(imgdir, f)
         img = cv2.imread(f)
         if img is None:
@@ -63,7 +90,7 @@ def main():
             ss  = score_[msk]
             #print('scores', score)
 
-            with open(os.path.join(anndir, '{}.txt'.format(idx)), 'w+') as fout:
+            with open(os.path.join(anndir, '{}.txt'.format(oidx)), 'w+') as fout:
                 fout.write('{}\n'.format(f1_))
                 fout.write('cx cy w h p\n')
                 for b_, s_ in zip(bs, ss):
@@ -73,10 +100,7 @@ def main():
                     bw  = (bx1 - bx0)
                     bh  = (by1 - by0)
                     fout.write('{} {} {} {} {}\n'.format(bcx,bcy,bw,bh,s_))
-
-            idx += 1
-            if (idx % 100) == 0:
-                print('{}:{}/{}'.format(idx,fi,tot))
+            oidx += 1
 
             # visualization part
             if viz:
@@ -89,8 +113,11 @@ def main():
                 if k in [27, ord('q')]:
                     return
 
+        if (fidx % 100) == 0:
+            print('{}/{}: {}'.format(fidx,tot, oidx))
+
     if viz:
         cv2.destroyWindow('win')
 
 if __name__ == "__main__":
-    main()
+    tf.app.run()

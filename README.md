@@ -25,6 +25,8 @@ python unique.py
 
 ## 3. Bootstrapping : Create Initial Annotations
 
+### Option 1 : DarkNet
+
 See [drone-net][2] for obtaining initial weights and parts of the dataset.
 
 (Note that [darknet][3] must be compiled with an alternate version of [detector.c][4] to produce annotations.)
@@ -32,6 +34,17 @@ See [drone-net][2] for obtaining initial weights and parts of the dataset.
 ```bash
 mkdir -p /tmp/det
 ./darknet detector test cfg/drone.data cfg/yolo-drone.cfg weights/yolo-drone.weights "/media/ssd/datasets/drones/all/"
+```
+
+### Option 2 : From Pre-Trained Network
+
+Alternatively, you may choose to produce the annotations from my [pre-trained network](https://drive.google.com/open?id=1EXKI4UeVRWroHhziD1ngJfVnQe8EsJHa).
+
+After downloading the network and extracting to `tmp/model`, An example execution configuration might look like the following:
+
+```bash
+python box_ann.py -h
+python box_ann.py --root=/tmp --model=model --use_gpu --noviz --img_dir=/media/ssd/datasets/drones/all --out_dir=/tmp/det --batch_size=16
 ```
 
 The resultant annotations will be stored in `/tmp/det` as `.txt` files.
@@ -78,7 +91,7 @@ python tfrec.py
 ## 6. Training
 
 ```bash
-python train.py --logtostderr --train_dir=training3/ --pipeline_config_path=pipeline-fpn.config
+python train.py --logtostderr --train_dir=training_demo/training/ --pipeline_config_path=pipeline.config
 ```
 
 ## 7. Export model

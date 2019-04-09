@@ -1,4 +1,7 @@
-
+#!/usr/bin/env python2
+"""
+Convert Custom Annotations To Standardized TFRecords.
+"""
 from __future__ import division
 from __future__ import print_function
 from __future__ import absolute_import
