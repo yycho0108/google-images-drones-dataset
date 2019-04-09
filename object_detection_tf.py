@@ -57,7 +57,7 @@ class ObjectDetectorTF(object):
         Returns:
             output(dict): {'box':A(N,M,4), 'class':A(N,M), 'score':A(N,M)}
         """
-        if img.ndim == 3:
+        if np.ndim(img) == 3:
             # single image configuration
             outputs = self.__call__(img[None,...])
             return {k:v[0] for k,v in outputs.iteritems()}
@@ -184,12 +184,13 @@ def test_images():
     Simple test script; requires /tmp/image1.jpg
     """
     #app = ObjectDetectorTF()
-    app = ObjectDetectorTF(model='model')
+    app = ObjectDetectorTF(model='model2')
 
-    imgdir = '/tmp/simg'
-    #imgdir = os.path.expanduser(
-    #        '~/libs/drone-net/image'
-    #        )
+    #imgdir = '/tmp/simg'
+    imgdir = os.path.expanduser(
+            #'~/libs/drone-net/image'
+            '/media/ssd/datasets/drones/data-png/ quadcopter'
+            )
 
     cv2.namedWindow('win', cv2.WINDOW_NORMAL)
 
@@ -199,6 +200,8 @@ def test_images():
     for f in fs:
         f = os.path.join(imgdir, f)
         img = cv2.imread(f)
+        if img is None:
+            continue
 
         h,w = img.shape[:2]
         res = app(img)
@@ -207,6 +210,8 @@ def test_images():
         cls   = res['class'][msk]
         box   = res['box'][msk]
         score = res['score'][msk]
+
+        print('scores', score)
 
         for box_, cls_ in zip(box, cls):
             #ry0,rx0,ry1,rx1 = box_ # relative

@@ -10,6 +10,13 @@ See [google-images-download][1] for details.
 googleimagesdownload -cf cfg.json
 ```
 
+It is recommended that the .png files be converted to .jpg files for storage:
+
+```bash
+mogrify -format jpg -transparent-color white -background white -alpha background -flatten *.png
+rm *.png
+```
+
 ## 2. Filter Duplicates by Perceptual Hash
 
 ```bash

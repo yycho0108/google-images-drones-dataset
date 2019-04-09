@@ -170,6 +170,14 @@ def bbox_gui(droot, f_lbl, fsr,
             #        os.path.join(droot, f),
             #        os.path.join('/tmp/x', f)
             #        )
+        #if not os.path.exists('/tmp/ximg'):
+        #    os.makedirs('/tmp/ximg')
+        #for (i, f) in enumerate(fsr_x):
+        #    l = open(os.path.join(droot, f)).readlines()
+        #    imf = l[0][:-1]
+        #    shutil.copyfile(imf,
+        #            os.path.join('/tmp/ximg', '{}.jpg'.format(i))
+        #            )
 
     if do_s:
         # relabel images labeled 's'
@@ -282,12 +290,9 @@ def bbox_gui(droot, f_lbl, fsr,
         #for (i, f) in enumerate(fsr_s):
         #    l = open(os.path.join(droot, f)).readlines()
         #    imf = l[0][:-1]
-
         #    shutil.copyfile(imf,
         #            os.path.join('/tmp/simg', '{}.jpg'.format(i))
         #            )
-
-
 
 def main():
     # basic directory parsing
@@ -312,8 +317,17 @@ def main():
         f_idx = 'ann_neg_idx.npy'
         fsr = fsn
 
-    ok_gui(droot, f_lbl, f_idx, fsr)
+    #ok_gui(droot, f_lbl, f_idx, fsr)
     #bbox_gui(droot, f_lbl, fsr)
+
+    if not os.path.exists('/tmp/ximg'):
+        os.makedirs('/tmp/ximg')
+    for (i, f) in enumerate(fsn):
+        l = open(os.path.join(droot, f)).readlines()
+        imf = l[0][:-1]
+        shutil.copyfile(imf,
+                os.path.join('/tmp/ximg', '{}.jpg'.format(i))
+                )
 
 if __name__ == "__main__":
     main()

@@ -1,26 +1,27 @@
 #!/usr/bin/env bash
-AUTOPATH=0
+AUTOPATH=1
 
 TF_MODELS_PATH="${HOME}/Repos/models/research/"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH/slim/"
+TRAIN_PATH='./training_demo/training3'
 
 INPUT_TYPE=image_tensor
-#PIPELINE_CONFIG_PATH='./training_demo/pipeline.config'
-PIPELINE_CONFIG_PATH='/tmp/pipeline.config'
+PIPELINE_CONFIG_PATH='./training_demo/training3/pipeline.config'
+#PIPELINE_CONFIG_PATH='/tmp/pipeline.config'
 
 if [ "$AUTOPATH" -ne "0" ]; then
     #TRAINED_CKPT_PREFIX='./training_demo/training/model.ckpt-'
-    CKPT_LATEST="$(head ./training_demo/training/checkpoint -n 1 | awk '{print $2}')"
+    CKPT_LATEST="$(head ${TRAIN_PATH}/checkpoint -n 1 | awk '{print $2}')"
     CKPT_LATEST="${CKPT_LATEST%\"}"
     CKPT_LATEST="${CKPT_LATEST#\"}"
-    TRAINED_CKPT_PREFIX="./training_demo/training/${CKPT_LATEST}"
+    TRAINED_CKPT_PREFIX="${TRAIN_PATH}/${CKPT_LATEST}"
 else
     TRAINED_CKPT_PREFIX="/tmp/model.ckpt-24112"
 fi
 
 echo "USING CHECKPOINT : $TRAINED_CKPT_PREFIX"
-EXPORT_DIR='/tmp/model'
+EXPORT_DIR='/tmp/model2'
 
 if [ -d "$EXPORT_DIR" ]; then
   # Control will enter here if $DIRECTORY exists.

@@ -16,11 +16,13 @@ def draw_box(img, box):
 def main():
     tf.enable_eager_execution()
     #rec = tf.data.TFRecordDataset('./drone.record')
-    rec = tf.data.TFRecordDataset('./drone-net.record')
+    #rec = tf.data.TFRecordDataset('./drone-net.record')
+    rec = tf.data.TFRecordDataset('./ximg.record')
 
     proto ={
             'image/height': tf.FixedLenFeature([], tf.int64),
             'image/width': tf.FixedLenFeature([], tf.int64),
+            'image/filename': tf.FixedLenFeature([], tf.string),
             'image/source_id': tf.FixedLenFeature([], tf.string),
             'image/encoded': tf.FixedLenFeature([], tf.string),
             'image/format': tf.FixedLenFeature([], tf.string),
@@ -35,9 +37,11 @@ def main():
     parse = lambda x : tf.parse_single_example(x, proto)
     dataset = rec.map(parse)
     shuf = dataset.shuffle(buffer_size = 256)
-    for rec in shuf.take(10):
+    cv2.namedWindow('win', cv2.WINDOW_NORMAL)
+    for rec in shuf.take(100):
         ks = rec.keys()
         #print [rec[k] for k in ks if k != 'image/encoded']
+        print rec['image/filename'].numpy()
         xmin = tf.sparse.to_dense(rec['image/object/bbox/xmin']).numpy()
         xmax = tf.sparse.to_dense(rec['image/object/bbox/xmax']).numpy()
         ymin = tf.sparse.to_dense(rec['image/object/bbox/ymin']).numpy()
@@ -49,11 +53,12 @@ def main():
         for box in zip(xmin,ymin,xmax,ymax):
             draw_box(img, box)
 
-        cv2.imshow('win', img)
+        cv2.imshow('win', img[...,::-1])
         k = cv2.waitKey(0)
 
         if k in [ord('q'), 27]:
             break
+    cv2.destroyWindow('win')
 
 if __name__ == "__main__":
     main()
