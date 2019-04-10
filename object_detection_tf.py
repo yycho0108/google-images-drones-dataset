@@ -179,27 +179,27 @@ def test_image():
     cv2.imshow('win', img)
     cv2.waitKey(0)
 
-def test_images():
+def test_images(imgdir, recursive=True, is_root=True):
     """
-    Simple test script; requires /tmp/image1.jpg
+    Simple test script; operating on a directory
     """
     #app = ObjectDetectorTF()
     app = ObjectDetectorTF(use_gpu=True, model='model')
 
-    #imgdir = '/tmp/simg'
-    imgdir = os.path.expanduser(
-            #'~/libs/drone-net/image'
-            '/media/ssd/datasets/drones/data-png/ quadcopter'
-            #"/media/ssd/datasets/youtube_box/train/0"
-            )
-
-    cv2.namedWindow('win', cv2.WINDOW_NORMAL)
+    if is_root:
+        cv2.namedWindow('win', cv2.WINDOW_NORMAL)
 
     fs = os.listdir(imgdir)
-    np.random.shuffle(fs)
-    
+    full = False
+
     for f in fs:
         f = os.path.join(imgdir, f)
+        if os.path.isdir(f):
+            if not recursive:
+                continue
+            if not test_images(f, recursive, is_root=False):
+                break
+
         img = cv2.imread(f)
         if img is None:
             continue
@@ -223,8 +223,13 @@ def test_images():
         k = cv2.waitKey(0)
         if k in [27, ord('q')]:
             break
+    else:
+        full=True
 
-    cv2.destroyWindow('win')
+    if is_root:
+        cv2.destroyWindow('win')
+
+    return full
 
 def test_camera():
     """ Simple test srcipt; requires /dev/video0 """
@@ -262,7 +267,14 @@ def test_camera():
 def main():
     #test_image()
     #test_camera()
-    test_images()
+
+    #imgdir = '/tmp/simg'
+    #imgdir = os.path.expanduser(
+    #        #'~/libs/drone-net/image'
+    #        '/media/ssd/datasets/drones/data-png/ quadcopter'
+    #        #"/media/ssd/datasets/youtube_box/train/0"
+    #        )
+    test_images('/media/ssd/datasets/drones/data-png')
 
 if __name__ == "__main__":
     main()

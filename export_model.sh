@@ -4,14 +4,13 @@ AUTOPATH=1
 TF_MODELS_PATH="${HOME}/Repos/models/research/"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH/slim/"
-TRAIN_PATH='./training_demo/training4'
+TRAIN_PATH='./training_demo/training5'
 
 INPUT_TYPE=image_tensor
 PIPELINE_CONFIG_PATH='./pipeline.config'
 #PIPELINE_CONFIG_PATH='/tmp/pipeline.config'
 
 if [ "$AUTOPATH" -ne "0" ]; then
-    #TRAINED_CKPT_PREFIX='./training_demo/training/model.ckpt-'
     CKPT_LATEST="$(head ${TRAIN_PATH}/checkpoint -n 1 | awk '{print $2}')"
     CKPT_LATEST="${CKPT_LATEST%\"}"
     CKPT_LATEST="${CKPT_LATEST#\"}"
