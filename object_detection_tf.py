@@ -184,7 +184,11 @@ def test_images(imgdir, recursive=True, is_root=True):
     Simple test script; operating on a directory
     """
     #app = ObjectDetectorTF()
-    app = ObjectDetectorTF(use_gpu=True, model='model')
+    app = ObjectDetectorTF(use_gpu=True,
+            #model='model2-drone-640x640'
+            #model='model4-drone-300x300'
+            model='model'
+            )
 
     if is_root:
         cv2.namedWindow('win', cv2.WINDOW_NORMAL)
@@ -205,8 +209,8 @@ def test_images(imgdir, recursive=True, is_root=True):
             continue
 
         h,w = img.shape[:2]
-        res = app(img)
-        msk = (res['score'] > 0.5)
+        res = app(img[...,::-1])
+        msk = (res['score'] > 0.7)
         #if np.count_nonzero(msk) <= 0:
         #    continue
 
@@ -228,6 +232,7 @@ def test_images(imgdir, recursive=True, is_root=True):
 
     if is_root:
         cv2.destroyWindow('win')
+        cv2.destroyAllWindows()
 
     return full
 
@@ -274,7 +279,9 @@ def main():
     #        '/media/ssd/datasets/drones/data-png/ quadcopter'
     #        #"/media/ssd/datasets/youtube_box/train/0"
     #        )
-    test_images('/media/ssd/datasets/drones/data-png')
+
+    #test_images('/media/ssd/datasets/drones/data-png')
+    test_images('/tmp/selfies')
 
 if __name__ == "__main__":
     main()

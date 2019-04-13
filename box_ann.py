@@ -25,7 +25,7 @@ flags.DEFINE_float('thresh', 0.95,
         'Bounding-Box Detection Confidence Threshold')
 flags.DEFINE_boolean('use_gpu', True,
         'Use GPU')
-flags.DEFINE_string('img_dir', '/tmp/ximg',
+flags.DEFINE_string('img_dir', '/tmp/img',
         'Source Image Directory')
 flags.DEFINE_string('out_dir', '/tmp/ann',
         'Output Annotations Directory')

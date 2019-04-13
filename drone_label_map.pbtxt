@@ -2,3 +2,7 @@ item {
     id : 1
     name: 'drone'
 }
+item {
+    id : 2
+    name: 'person'
+}

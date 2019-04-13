@@ -4,7 +4,8 @@ AUTOPATH=1
 TF_MODELS_PATH="${HOME}/Repos/models/research/"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH/slim/"
-TRAIN_PATH='./training_demo/training5'
+#TRAIN_PATH='./training_demo/training6'
+TRAIN_PATH='/tmp/train/2'
 
 INPUT_TYPE=image_tensor
 PIPELINE_CONFIG_PATH='./pipeline.config'
