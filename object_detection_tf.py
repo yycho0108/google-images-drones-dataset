@@ -158,12 +158,12 @@ class ObjectDetectorTF(object):
     def run(self, *args, **kwargs):
         return self.sess_.run(*args, **kwargs)
 
-def test_image():
+def test_image(img='/tmp/image1.jpg'):
     """
     Simple test script; requires /tmp/image1.jpg
     """
-    app = ObjectDetectorTF()
-    img = cv2.imread('/tmp/image1.jpg')
+    app = ObjectDetectorTF(model='model')
+    img = cv2.imread(img)
     h,w = img.shape[:2]
     res = app(img)
     msk = (res['score'] > 0.5)
@@ -171,6 +171,7 @@ def test_image():
     cls   = res['class'][msk]
     box   = res['box'][msk]
     score = res['score'][msk]
+    print 'score', score
 
     for box_, cls_ in zip(box, cls):
         #ry0,rx0,ry1,rx1 = box_ # relative
@@ -179,7 +180,7 @@ def test_image():
     cv2.imshow('win', img)
     cv2.waitKey(0)
 
-def test_images(imgdir, recursive=True, is_root=True):
+def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
     """
     Simple test script; operating on a directory
     """
@@ -187,7 +188,8 @@ def test_images(imgdir, recursive=True, is_root=True):
     app = ObjectDetectorTF(use_gpu=True,
             #model='model2-drone-640x640'
             #model='model4-drone-300x300'
-            model='model'
+            model='model',
+            cmap={1:'drone', 2:'person'}
             )
 
     if is_root:
@@ -195,13 +197,15 @@ def test_images(imgdir, recursive=True, is_root=True):
 
     fs = os.listdir(imgdir)
     full = False
+    if shuffle:
+        np.random.shuffle(fs)
 
     for f in fs:
         f = os.path.join(imgdir, f)
         if os.path.isdir(f):
             if not recursive:
                 continue
-            if not test_images(f, recursive, is_root=False):
+            if not test_images(f, recursive, is_root=False, shuffle=shuffle):
                 break
 
         img = cv2.imread(f)
@@ -210,7 +214,7 @@ def test_images(imgdir, recursive=True, is_root=True):
 
         h,w = img.shape[:2]
         res = app(img[...,::-1])
-        msk = (res['score'] > 0.7)
+        msk = (res['score'] > 0.3)
         #if np.count_nonzero(msk) <= 0:
         #    continue
 
@@ -270,7 +274,7 @@ def test_camera():
         print('average fps: {}'.format( np.mean(fps[-100:])) )
 
 def main():
-    #test_image()
+    #test_image('/tmp/ximg/819.jpg')
     #test_camera()
 
     #imgdir = '/tmp/simg'
@@ -282,6 +286,7 @@ def main():
 
     #test_images('/media/ssd/datasets/drones/data-png')
     test_images('/tmp/selfies')
+    #test_images("/media/ssd/datasets/coco/raw-data/test2017")
 
 if __name__ == "__main__":
     main()

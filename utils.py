@@ -67,14 +67,14 @@ def convert_to_pixels(image_size, bounding_box):
 			int(bounding_box[2] * image_size[0]),
 			int(bounding_box[3] * image_size[1]))
 
-def draw_bbox(img, box, cls=None):
+def draw_bbox(img, box, cls=None, color=(255,0,0) ):
     """ Draw a yxyx-encoded box """
     h,w = img.shape[:2]
     yxyx = box
     yxyx = np.multiply(yxyx, [h,w,h,w])
     yxyx = np.round(yxyx).astype(np.int32)
     y0,x0,y1,x1 = yxyx
-    cv2.rectangle(img, (x0,y0), (x1,y1), (255,0,0), thickness=2)
+    cv2.rectangle(img, (x0,y0), (x1,y1), color, thickness=2)
     if cls is not None:
         org = ( max(x0,0), min(y1,h) )
         cv2.putText(img, cls, org, 

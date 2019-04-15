@@ -15,10 +15,12 @@ def draw_box(img, box):
 
 def main():
     tf.enable_eager_execution()
-    #rec = tf.data.TFRecordDataset('./drone.record')
+    rec = tf.data.TFRecordDataset('./drone.record')
     #rec = tf.data.TFRecordDataset('./drone-net.record')
     #rec = tf.data.TFRecordDataset('./ximg.record')
-    rec = tf.data.TFRecordDataset('./png.record')
+    #rec = tf.data.TFRecordDataset('./png.record')
+    #rec = tf.data.TFRecordDataset('/tmp/png.record')
+    #rec = tf.data.TFRecordDataset('/tmp/ximg2.record')
 
     proto ={
             'image/height': tf.FixedLenFeature([], tf.int64),
@@ -39,6 +41,9 @@ def main():
     dataset = rec.map(parse)
     shuf = dataset.shuffle(buffer_size = 256)
     cv2.namedWindow('win', cv2.WINDOW_NORMAL)
+    #print 'tot', sum(1 for _ in tf.python_io.tf_record_iterator('./ximg.record'))
+    #print 'tot', sum(1 for _ in tf.python_io.tf_record_iterator('/tmp/ximg.record'))
+
     for rec in shuf.take(100):
         ks = rec.keys()
         #print [rec[k] for k in ks if k != 'image/encoded']
