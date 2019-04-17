@@ -184,7 +184,7 @@ def test_images(imgdir, recursive=True, is_root=True):
     Simple test script; operating on a directory
     """
     #app = ObjectDetectorTF()
-    app = ObjectDetectorTF(use_gpu=True, model='model')
+    app = ObjectDetectorTF(use_gpu=False, model='model')
 
     if is_root:
         cv2.namedWindow('win', cv2.WINDOW_NORMAL)
@@ -205,8 +205,8 @@ def test_images(imgdir, recursive=True, is_root=True):
             continue
 
         h,w = img.shape[:2]
-        res = app(img)
-        msk = (res['score'] > 0.5)
+        res = app(img[..., ::-1])
+        msk = (res['score'] > 0.4)
         #if np.count_nonzero(msk) <= 0:
         #    continue
 
@@ -216,8 +216,8 @@ def test_images(imgdir, recursive=True, is_root=True):
 
         print('scores', score)
 
-        for box_, cls_ in zip(box, cls):
-            draw_bbox(img, box_, str(cls_))
+        for box_, cls_, val_ in zip(box, cls, score):
+            draw_bbox(img, box_, '{}:{:.2f}'.format(cls_,val_))
 
         cv2.imshow('win', img)
         k = cv2.waitKey(0)
@@ -274,7 +274,7 @@ def main():
     #        '/media/ssd/datasets/drones/data-png/ quadcopter'
     #        #"/media/ssd/datasets/youtube_box/train/0"
     #        )
-    test_images('/media/ssd/datasets/drones/data-png')
+    test_images(os.path.expanduser('/tmp/selfies'))
 
 if __name__ == "__main__":
     main()
