@@ -5,7 +5,7 @@ TF_MODELS_PATH="${HOME}/Repos/models/research/"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH/slim/"
 #TRAIN_PATH='./training_demo/training6'
-TRAIN_PATH='/tmp/train/0'
+TRAIN_PATH='/tmp/train/5'
 
 INPUT_TYPE=image_tensor
 PIPELINE_CONFIG_PATH="${TRAIN_PATH}/pipeline.config"
@@ -25,7 +25,7 @@ EXPORT_DIR='/tmp/model'
 
 if [ -d "$EXPORT_DIR" ]; then
   # Control will enter here if $DIRECTORY exists.
-  rm -rfi $EXPORT_DIR
+  rm -rfI $EXPORT_DIR
 fi
 
 PYFILE="${TF_MODELS_PATH}/object_detection/export_inference_graph.py"

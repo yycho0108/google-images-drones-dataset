@@ -213,8 +213,8 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
             continue
 
         h,w = img.shape[:2]
-        res = app(img[...,::-1])
-        msk = (res['score'] > 0.3)
+        res = app(img[..., ::-1])
+        msk = (res['score'] > 0.5)
         #if np.count_nonzero(msk) <= 0:
         #    continue
 
@@ -224,8 +224,8 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
 
         print('scores', score)
 
-        for box_, cls_ in zip(box, cls):
-            draw_bbox(img, box_, str(cls_))
+        for box_, cls_, val_ in zip(box, cls, score):
+            draw_bbox(img, box_, '{}:{:.2f}'.format(cls_,val_))
 
         cv2.imshow('win', img)
         k = cv2.waitKey(0)
@@ -284,8 +284,8 @@ def main():
     #        #"/media/ssd/datasets/youtube_box/train/0"
     #        )
 
-    #test_images('/media/ssd/datasets/drones/data-png')
-    test_images('/tmp/selfies')
+    test_images('/media/ssd/datasets/drones/archive/data-png')
+    #test_images('/tmp/selfies')
     #test_images("/media/ssd/datasets/coco/raw-data/test2017")
 
 if __name__ == "__main__":
