@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-AUTOPATH=1
+AUTOPATH=0
 
 TF_MODELS_PATH="${HOME}/Repos/models/research/"
 PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH"
@@ -8,8 +8,8 @@ PYTHONPATH="$PYTHONPATH:$TF_MODELS_PATH/slim/"
 TRAIN_PATH='/tmp/train/5'
 
 INPUT_TYPE=image_tensor
-PIPELINE_CONFIG_PATH="${TRAIN_PATH}/pipeline.config"
-#PIPELINE_CONFIG_PATH='/tmp/pipeline.config'
+#PIPELINE_CONFIG_PATH="${TRAIN_PATH}/pipeline.config"
+PIPELINE_CONFIG_PATH='/tmp/pipeline.config'
 
 if [ "$AUTOPATH" -ne "0" ]; then
     CKPT_LATEST="$(head ${TRAIN_PATH}/checkpoint -n 1 | awk '{print $2}')"
@@ -17,7 +17,7 @@ if [ "$AUTOPATH" -ne "0" ]; then
     CKPT_LATEST="${CKPT_LATEST#\"}"
     TRAINED_CKPT_PREFIX="${TRAIN_PATH}/${CKPT_LATEST}"
 else
-    TRAINED_CKPT_PREFIX="/tmp/model.ckpt-24112"
+    TRAINED_CKPT_PREFIX="/tmp/model.ckpt-24519"
 fi
 
 echo "USING CHECKPOINT : $TRAINED_CKPT_PREFIX"

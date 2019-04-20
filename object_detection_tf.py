@@ -8,6 +8,30 @@ import time
 
 from utils import draw_bbox
 
+def expand_box(box, margin):
+    y0, x0, y1, x1 = [box[..., i] for i in range(4)]
+    cy = 0.5 * (y0 + y1)
+    cx = 0.5 * (x0 + x1)
+    center = np.stack([cy, cx, cy, cx], axis=-1)
+    return (1.0 + margin)*(box - center) + center
+
+def crop_box(img, box, margin=0.0):
+    h, w = img.shape[:2]
+    if margin > 0:
+        box = expand_box(box, margin)
+    box = np.clip(box, 0, 1)
+    y0,x0,y1,x1 = np.multiply(box, [h,w,h,w]).astype(np.int32)
+    return img[y0:y1,x0:x1], box
+
+def inner_box(box, subbox):
+    y0, x0, y1, x1 = [box[..., i] for i in range(4)]
+    bh = y1 - y0
+    bw = x1 - x0
+    o = np.stack([y0,x0,y0,x0], axis=-1) # origin (top-left)
+    s = np.stack([bh,bw,bh,bw], axis=-1) # scale (hwhw)
+    d = np.multiply(subbox, s) # delta (bottom-right)
+    return o + d
+
 class ObjectDetectorTF(object):
     """
     Thin wrapper around the Tensorflow Object Detection API.
@@ -53,9 +77,9 @@ class ObjectDetectorTF(object):
         Run object detection.
 
         Arguments:
-            img(A(N?,W,H,3)): image to run inference on; may optionally be batched.
+            img(A(N?,H,W,3, uint8)): image to run inference on; may optionally be batched.
         Returns:
-            output(dict): {'box':A(N,M,4), 'class':A(N,M), 'score':A(N,M)}
+            output(dict): {'box':A(N?,M,4), 'class':A(N?,M), 'score':A(N?,M)}
         """
         if np.ndim(img) == 3:
             # single image configuration
@@ -67,6 +91,100 @@ class ObjectDetectorTF(object):
             outputs['class'] = [[ str(self.cmap_[x] if (x in self.cmap_) else x) for x in xs] for xs in outputs['class']]
             outputs['class'] = np.array(outputs['class'], dtype=str)
         return outputs
+
+    def detect(self, img,
+            is_bgr=True,
+            threshold=0.7,
+            threshold2=None, 
+            ):
+        """
+        Wrapper around ObjectDetectorTF.__call__() that handles convenience arguments,
+        such as two-step detection and channel conversion.
+        TODO: currently only works for non-batch style inputs.
+
+        Arguments:
+            img(A(H,W,3, uint8)): image to run inference on; batch-mode disabled.
+            is_bgr(bool): whether `img` is organized channelwise rgb or bgr.
+            threshold(float): minimum bounding-box confidence score to be considered valid.
+            threshold2(A(2, float)): parameters weak-strong two-step validation; `None` to disable.
+        returns:
+            output(dict): {'box':A(M, 4), 'class':A(M), 'score':A(M)}
+        """
+        if np.ndim(img) > 3:
+            print('batch configuration not currently supported for ObjectDetectorTF.detect()')
+            return None
+
+        if is_bgr:
+            # reverse final axis, bgr -> rgb
+            img = img[..., ::-1]
+        # if is_normalized:
+        #    # convert from 0-1 range to 0-255
+        #    img = (img * 255).astype(np.uint8)
+        res = self.__call__(img)
+        cls, box, score = res['class'], res['box'], res['score']
+
+        if threshold2 is None or (threshold2[0] >= threshold):
+            # double-checking disabled or pointless
+            msk = (threshold <= score)
+            #return cls[msk], box[msk], score[msk]
+            return {k:v[msk] for (k,v) in zip(
+                ['class', 'box', 'score'],
+                [cls, box, score])}
+        else:
+            # double-checking enabled
+            good_msk = (threshold <= score)
+            retry_msk = np.logical_and.reduce([
+                    threshold2[0] <= score,
+                    #score < threshold2[1],
+                    ~good_msk
+                    ])
+
+            if not np.any(retry_msk):
+                # no box to retry - early return
+                return {k:v[good_msk] for (k,v) in zip(
+                    ['class', 'box', 'score'],
+                    [cls, box, score])}
+
+            sub_imgs = []
+            sup_clss = []
+            sup_boxs = []
+            for c, b in zip(cls[retry_msk], box[retry_msk]):
+                sub_img, sup_box = crop_box(img, box, margin=0.25)
+                sub_imgs.append(cv2.resize(sub_img, self.shape_))
+                sup_boxs.append( sup_box )
+                sup_clss.append( c )
+            sub_imgs = np.stack(sub_imgs, axis=0)
+            sub_res = self.__call__(sub_imgs) # TODO : consider `recursive` detection
+
+            new_cls = []
+            new_box = []
+            new_score = []
+
+            for (spc, spb, sbcs, sbbs, sbss) in zip(
+                    sup_clss, sup_boxs,
+                    sub_res['class'], sub_res['box'], sub_res['score']
+                    ):
+                for (sbc, sbb, sbs) in zip(sbcs, sbbs, sbss):
+                    if sbs < threshold2[1]:
+                        # stricter score threshold
+                        continue
+                    if sbc != spc:
+                        # matching class
+                        continue
+                    new_cls.append( spc )
+                    new_box.append( inner_box(spb, sbb) )
+                    new_score.append( sbs )
+
+            # finalize result
+            fin_cls = np.concatenate([cls[good_msk], new_cls])
+            fin_box = np.concatenate([box[good_msk], new_box])
+            fin_score = np.concatenate([score[good_msk], new_score])
+
+            return {k:v for (k,v) in zip(
+                ['class', 'box', 'score'],
+                [fin_cls, fin_box, fin_score])}
+        # should never reach here
+        return None
 
     def _maybe_download_ckpt(self):
         """
@@ -213,11 +331,14 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
             continue
 
         h,w = img.shape[:2]
-        res = app(img[..., ::-1])
+        #res = app(img[..., ::-1])
+        res = app.detect(img, is_bgr=True,
+                threshold=0.7,
+                threshold2=(0.5, 0.85))
+
         msk = (res['score'] > 0.5)
         #if np.count_nonzero(msk) <= 0:
         #    continue
-
         cls   = res['class'][msk]
         box   = res['box'][msk]
         score = res['score'][msk]
@@ -278,14 +399,15 @@ def main():
     #test_camera()
 
     #imgdir = '/tmp/simg'
-    #imgdir = os.path.expanduser(
-    #        #'~/libs/drone-net/image'
-    #        '/media/ssd/datasets/drones/data-png/ quadcopter'
-    #        #"/media/ssd/datasets/youtube_box/train/0"
-    #        )
+    img_dir = os.path.expanduser(
+            '~/Repos/drone-net/image'
+            #'/media/ssd/datasets/drones/data-png/ quadcopter'
+            #"/media/ssd/datasets/youtube_box/train/0"
+            #'/tmp/selfies'
+            )
 
-    test_images('/media/ssd/datasets/drones/archive/data-png')
-    #test_images('/tmp/selfies')
+    #test_images('/media/ssd/datasets/drones/archive/data-png')
+    test_images(img_dir)
     #test_images("/media/ssd/datasets/coco/raw-data/test2017")
 
 if __name__ == "__main__":
