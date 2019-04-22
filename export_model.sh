@@ -8,7 +8,7 @@ TF_MODELS_PATH="${HOME}/Repos/models/research/"
 
 # Manual Path
 PIPELINE_CONFIG_PATH='/tmp/pipeline.config'
-TRAINED_CKPT_PREFIX="/tmp/model.ckpt-123125"
+TRAINED_CKPT_PREFIX="/tmp/model.ckpt-150229"
 # Auto Path
 if [ "$AUTOPATH" -eq "1" ]; then
     CKPT_LATEST="$(head ${TRAIN_PATH}/checkpoint -n 1 | awk '{print $2}')"

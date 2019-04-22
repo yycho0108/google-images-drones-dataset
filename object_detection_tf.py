@@ -54,7 +54,6 @@ class ObjectDetectorTF(object):
             threshold=0.5,
             threshold2=None,
             cmap=None,
-            shape=(300,300,3),
             max_batch=8
             ):
         """
@@ -65,23 +64,10 @@ class ObjectDetectorTF(object):
             threshold(float)        : Minimum bounding-box confidence score to be considered valid.
             threshold2(A(2, float)) : Parameters weak-strong two-step validation; `None` to disable.
             cmap(dict)              : Alternative class definitions; remap known classes for convenience.
-            shape(tuple)            : (WxHx3) shape used for warmup() to pre-allocate tensor; also used for batch resizing.
             max_batch(int)          : Maximum number of batches for stacked execution. Important for CPU execution.
         Note:
             [2]: https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md
         """
-
-        # print configuration
-        print("""
-        -- [Loading Object Detection Model] --
-        root       : {}
-        model      : {}
-        gpu        : {}
-        threshold  : {}
-        threshold2 : {}
-        max batch  : {}
-        --------------------------------------
-        """.format(root, model, gpu, threshold, threshold2, max_batch))
 
         # cache arguments
         self.root_  = root
@@ -89,14 +75,29 @@ class ObjectDetectorTF(object):
         self.gpu_ = float(gpu) # implicitly converted to float
         self.threshold_ = threshold
         self.threshold2_ = threshold2
-        self.shape_ = shape
         self.max_batch_ = max_batch
 
         # load model
         ckpt_file = self._maybe_download_ckpt()
         self.graph_ = self._load_graph(ckpt_file)
-        self.input_, self.output_ = self._build_pipeline(self.graph_)
+        self.input_, self.output_, self.shape_ = self._build_pipeline(self.graph_)
         self.cmap_ = cmap
+
+
+        # print configuration
+        print("""
+        -- [Loading Object Detection Model] --
+        root       : {}
+        model      : {}
+        ckpt       : {}
+        gpu        : {}
+        threshold  : {}
+        threshold2 : {}
+        max batch  : {}
+        shape      : {}
+        --------------------------------------
+        """.format(root, model, ckpt_file, gpu, threshold, threshold2, max_batch,
+            self.shape_))
 
         self.initialize()
 
@@ -274,11 +275,10 @@ class ObjectDetectorTF(object):
         Check if model file exists; download if not available.
         Returns:
             ckpt_file(str): path to the checkpoint, from which to load graph.
+            TODO : actually .pb file
         """
         ckpt_file = os.path.join(self.root_, self.model_,
                 'frozen_inference_graph.pb')
-        print('ckpt_file', ckpt_file)
-
         if not os.path.exists(ckpt_file):
             if self.model_ in ObjectDetectorTF.mmap_:
                 # fetch from google drive
@@ -325,13 +325,22 @@ class ObjectDetectorTF(object):
         x = None
         y = {}
         with graph.as_default():
+            # convenience alias
             get = lambda s: graph.get_tensor_by_name(s)
+
+            # input
             x = get('image_tensor:0')
+
+            # outputs
             y['box'] = get('detection_boxes:0')
             y['score'] = get('detection_scores:0')
             y['class'] = get('detection_classes:0')
             y['num'] = get('num_detections:0')
-        return x, y
+
+            # shape (TODO : fragile)
+            rsz = get('Preprocessor/map/while/ResizeImage/resize_images/Squeeze:0')
+            shape = tuple(rsz.shape.as_list()[:2]) + (3,)
+        return x, y, shape
 
     def warmup(self):
         """ Allocate resources on the GPU as a warm-up """
@@ -391,9 +400,8 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
             #model='model4-drone-300x300',
             model='model',
             cmap={1:'drone', 2:'person'},
-            shape=(300,300,3),
-            threshold=0.375,
-            threshold2=(0.125, 0.5)
+            threshold=0.5,
+            threshold2=(0.25, 0.625)
             )
 
     if is_root and viz:
