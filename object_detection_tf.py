@@ -40,18 +40,23 @@ class ObjectDetectorTF(object):
     Note:
         [1]: https://github.com/tensorflow/models/blob/master/research/object_detection/object_detection_tutorial.ipynb
     """
+    mmap_ = {
+            'model2-drone-300x300' : '1voCDNghyKCNzk7Q9c4fzj23lW5jQtoTp'
+            }
+
     def __init__(self,
             root='/tmp',
             model='ssd_mobilenet_v1_ppn_shared_box_predictor_300x300_coco14_sync_2018_07_03',
-            use_gpu=False,
+            gpu=0.0,
             cmap=None,
-            shape=(300,300,3)
+            shape=(300,300,3),
+            max_batch=8
             ):
         """
         Arguments:
             root(str): persistent data directory; override to avoid initialization overhead.
             model(str): model name; refer to the [model zoo][2].
-            use_gpu(bool): Enable vision processing execution on the GPU.
+            gpu(float): Enables execution on the GPU; specifies fraction of gpu to occupy.
             cmap(dict): Alternative class definitions; remap known classes for convenience.
             shape(tuple): (WxHx3) shape used for warmup() to pre-allocate tensor.
 
@@ -61,8 +66,9 @@ class ObjectDetectorTF(object):
         # cache arguments
         self.root_  = root
         self.model_ = model
-        self.use_gpu_ = use_gpu
+        self.gpu_ = float(gpu) # implicitly converted to float
         self.shape_ = shape
+        self.max_batch_ = max_batch
 
         # load model
         ckpt_file = self._maybe_download_ckpt()
@@ -85,6 +91,23 @@ class ObjectDetectorTF(object):
             # single image configuration
             outputs = self.__call__(img[None,...])
             return {k:v[0] for k,v in outputs.iteritems()}
+        
+        if len(img) > self.max_batch_:
+            # to keep reasonable memory footprint,
+            # split to multiple parts; kind of important when gpu:=false
+            n_split = int(np.ceil(len(img)/float(self.max_batch_)))
+            imgs    = np.array_split(img, n_split, axis=0)
+            outputs = {}
+            for imgs_i in imgs:
+                out_i = self.__call__(imgs_i)
+                for (k, v) in out_i.items():
+                    if k in outputs:
+                        outputs[k] = np.concatenate([outputs[k], v])
+                    else:
+                        outputs[k] = v
+            return outputs
+
+        # default configuration
         outputs = self.run(self.output_, {self.input_:img})
         if self.cmap_ is not None:
             # map to alternative class definitions
@@ -187,6 +210,34 @@ class ObjectDetectorTF(object):
         # should never reach here
         return None
 
+    def _download_from_gdrive(self):
+        try:
+            from google_drive_downloader import GoogleDriveDownloader as gd
+            gd.download_file_from_google_drive(
+                    file_id=ObjectDetectorTF.mmap_[self.model_],
+                    dest_path=os.path.join(self.root_, self.model_, 'frozen_inference_graph.pb'),
+                    unzip=True)
+        except Exception as e:
+            print('Downloading From GDrive Failed : {}'.format(e))
+
+    def _download_from_tfzoo(self,
+            model_tar_basename,
+            model_tar_fullpath
+            ):
+        # fetch from web if tar file does not exist
+        if not os.path.exists(model_tar_fullpath):
+            print('downloading model ...'.format(self.model_))
+            download_base = 'http://download.tensorflow.org/models/object_detection/'
+            opener = urllib.request.URLopener()
+            opener.retrieve(download_base+model_tar_basename, model_tar_fullpath)
+
+        # extract if graph does not exist
+        tar_file = tarfile.open(model_tar_fullpath)
+        for file in tar_file.getmembers():
+            file_name = os.path.basename(file.name)
+            if 'frozen_inference_graph.pb' in file_name:
+                tar_file.extract(file, self.root_)
+
     def _maybe_download_ckpt(self):
         """
         WARN: internal.
@@ -198,25 +249,19 @@ class ObjectDetectorTF(object):
         ckpt_file = os.path.join(self.root_, self.model_,
                 'frozen_inference_graph.pb')
         print('ckpt_file', ckpt_file)
-        model_tar_basename = '{}.tar.gz'.format(self.model_)
-        model_tar_fullpath = os.path.join(self.root_, model_tar_basename)
 
         if not os.path.exists(ckpt_file):
-            # fetch from web if tar file does not exist
-            if not os.path.exists(model_tar_fullpath):
-                print('downloading model ...'.format(self.model_))
-                download_base = 'http://download.tensorflow.org/models/object_detection/'
-                opener = urllib.request.URLopener()
-                opener.retrieve(download_base+model_tar_basename, model_tar_fullpath)
-
-            # extract if graph does not exist
-            tar_file = tarfile.open(model_tar_fullpath)
-            for file in tar_file.getmembers():
-                file_name = os.path.basename(file.name)
-                if 'frozen_inference_graph.pb' in file_name:
-                    tar_file.extract(file, self.root_)
+            if self.model_ in ObjectDetectorTF.mmap_:
+                # fetch from google drive
+                self._download_from_gdrive()
+            else:
+                # fetch from tf zoo
+                model_tar_basename = '{}.tar.gz'.format(self.model_)
+                model_tar_fullpath = os.path.join(self.root_, model_tar_basename)
+                self._download_from_tfzoo(
+                        model_tar_basename,
+                        model_tar_fullpath)
         return ckpt_file
-
     def _load_graph(self, ckpt_file):
         """
         WARN: internal.
@@ -265,8 +310,16 @@ class ObjectDetectorTF(object):
     def initialize(self):
         """ Create Session and warmup """
         with self.graph_.as_default():
-            if self.use_gpu_:
-                self.sess_ = tf.Session(graph=self.graph_)
+            if self.gpu_ > 0:
+                gpu_options = tf.GPUOptions(
+                        per_process_gpu_memory_fraction=self.gpu_
+                        # TODO : enable allow_growth?
+                        )
+                config      = tf.ConfigProto(gpu_options=gpu_options)
+                self.sess_ = tf.Session(
+                        config=config,
+                        graph=self.graph_
+                        )
             else:
                 self.sess_ = tf.Session(
                         config=tf.ConfigProto(device_count={'GPU': 0}),
@@ -298,19 +351,20 @@ def test_image(img='/tmp/image1.jpg'):
     cv2.imshow('win', img)
     cv2.waitKey(0)
 
-def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
+def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
     """
     Simple test script; operating on a directory
     """
     #app = ObjectDetectorTF()
-    app = ObjectDetectorTF(use_gpu=False,
-            #model='model2-drone-640x640'
-            #model='model4-drone-300x300'
+    app = ObjectDetectorTF(gpu=0.9,
+            #model='model2-drone-300x300',
+            #model='model4-drone-300x300',
             model='model',
             cmap={1:'drone', 2:'person'},
+            shape=(300,300,3)
             )
 
-    if is_root:
+    if is_root and viz:
         cv2.namedWindow('win', cv2.WINDOW_NORMAL)
 
     fs = os.listdir(imgdir)
@@ -323,7 +377,7 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
         if os.path.isdir(f):
             if not recursive:
                 continue
-            if not test_images(f, recursive, is_root=False, shuffle=shuffle):
+            if not test_images(f, recursive, is_root=False, shuffle=shuffle, viz=viz):
                 break
 
         img = cv2.imread(f)
@@ -343,21 +397,19 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
         cls   = res['class']
         box   = res['box']
         score = res['score']
-
         print('scores', score)
-
-        for box_, cls_, val_ in zip(box, cls, score):
-            draw_bbox(img, box_, '{}:{:.2f}'.format(cls_,val_))
-
-        cv2.imshow('win', img)
-        k = cv2.waitKey(0)
-        if k in [27, ord('q')]:
-            break
+        if viz:
+            for box_, cls_, val_ in zip(box, cls, score):
+                draw_bbox(img, box_, '{}:{:.2f}'.format(cls_,val_))
+            cv2.imshow('win', img)
+            k = cv2.waitKey(0)
+            if k in [27, ord('q')]:
+                break
     else:
         # went through all images without interruption
         full=True
 
-    if is_root:
+    if is_root and viz:
         cv2.destroyWindow('win')
         cv2.destroyAllWindows()
 
@@ -365,7 +417,7 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
 
 def test_camera():
     """ Simple test srcipt; requires /dev/video0 """
-    app = ObjectDetectorTF(use_gpu=False, cmap={1:'person'})
+    app = ObjectDetectorTF(gpu=False, cmap={1:'person'})
 
     cam = cv2.VideoCapture(0)
 
@@ -401,14 +453,14 @@ def main():
 
     #imgdir = '/tmp/simg'
     img_dir = os.path.expanduser(
-            '~/Repos/drone-net/image'
+            #'~/Repos/drone-net/image'
             #'/media/ssd/datasets/drones/data-png/ quadcopter'
             #"/media/ssd/datasets/youtube_box/train/0"
-            #'/tmp/selfies'
+            '/tmp/selfies'
             )
 
     #test_images('/media/ssd/datasets/drones/archive/data-png')
-    test_images(img_dir)
+    test_images(img_dir, viz=True)
     #test_images("/media/ssd/datasets/coco/raw-data/test2017")
 
 if __name__ == "__main__":
