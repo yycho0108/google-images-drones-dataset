@@ -51,25 +51,44 @@ class ObjectDetectorTF(object):
             root='/tmp',
             model='model',
             gpu=0.0,
+            threshold=0.5,
+            threshold2=None,
             cmap=None,
             shape=(300,300,3),
             max_batch=8
             ):
         """
         Arguments:
-            root(str): persistent data directory; override to avoid initialization overhead.
-            model(str): model name; refer to the [model zoo][2].
-            gpu(float): Enables execution on the GPU; specifies fraction of gpu to occupy.
-            cmap(dict): Alternative class definitions; remap known classes for convenience.
-            shape(tuple): (WxHx3) shape used for warmup() to pre-allocate tensor.
-
+            root(str)               : Persistent data directory; override to avoid initialization overhead.
+            model(str)              : Model name; refer to the [model zoo][2].
+            gpu(float)              : Enables execution on the GPU; specifies fraction of gpu to occupy.
+            threshold(float)        : Minimum bounding-box confidence score to be considered valid.
+            threshold2(A(2, float)) : Parameters weak-strong two-step validation; `None` to disable.
+            cmap(dict)              : Alternative class definitions; remap known classes for convenience.
+            shape(tuple)            : (WxHx3) shape used for warmup() to pre-allocate tensor; also used for batch resizing.
+            max_batch(int)          : Maximum number of batches for stacked execution. Important for CPU execution.
         Note:
             [2]: https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc/detection_model_zoo.md
         """
+
+        # print configuration
+        print("""
+        -- [Loading Object Detection Model] --
+        root       : {}
+        model      : {}
+        gpu        : {}
+        threshold  : {}
+        threshold2 : {}
+        max batch  : {}
+        --------------------------------------
+        """.format(root, model, gpu, threshold, threshold2, max_batch))
+
         # cache arguments
         self.root_  = root
         self.model_ = model
         self.gpu_ = float(gpu) # implicitly converted to float
+        self.threshold_ = threshold
+        self.threshold2_ = threshold2
         self.shape_ = shape
         self.max_batch_ = max_batch
 
@@ -120,7 +139,7 @@ class ObjectDetectorTF(object):
 
     def detect(self, img,
             is_bgr=True,
-            threshold=0.7,
+            threshold=None,
             threshold2=None
             ):
         """
@@ -129,13 +148,20 @@ class ObjectDetectorTF(object):
         TODO: currently only works for non-batch style inputs.
 
         Arguments:
-            img(A(H,W,3, uint8)): image to run inference on; batch-mode disabled.
-            is_bgr(bool): whether `img` is organized channelwise rgb or bgr.
-            threshold(float): minimum bounding-box confidence score to be considered valid.
-            threshold2(A(2, float)): parameters weak-strong two-step validation; `None` to disable.
+            img(A(H,W,3, uint8))    : image to run inference on; batch-mode disabled.
+            is_bgr(bool)            : whether `img` is organized channelwise rgb or bgr.
+            threshold(float)        : minimum bounding-box confidence score to be considered valid.
+            threshold2(A(2, float)) : parameters weak-strong two-step validation; `None` to disable.
         returns:
-            output(dict): {'box':A(M, 4), 'class':A(M), 'score':A(M)}
+            output(dict)            : {'box':A(M, 4), 'class':A(M), 'score':A(M)}
         """
+
+        # supply default args
+        if threshold is None:
+            threshold = self.threshold_
+        if threshold2 is None:
+            threshold2 = self.threshold2_
+
         if np.ndim(img) > 3:
             print('batch configuration not currently supported for ObjectDetectorTF.detect()')
             return None
@@ -265,15 +291,16 @@ class ObjectDetectorTF(object):
                         model_tar_basename,
                         model_tar_fullpath)
         return ckpt_file
+
     def _load_graph(self, ckpt_file):
         """
         WARN: internal.
 
         Load Graph from file.
         Arguments:
-            ckpt_file(str): result from _maybe_download_ckpt()
+            ckpt_file(str): Result from _maybe_download_ckpt()
         Returns:
-            graph(tf.Graph): computational tensorflow Graph
+            graph(tf.Graph): Computational tensorflow graph.
         """
         detection_graph = tf.Graph()
         with detection_graph.as_default():
@@ -290,10 +317,10 @@ class ObjectDetectorTF(object):
 
         Parse graph into inputs and outputs.
         Arguments:
-            graph(tf.Graph): result from _load_graph()
+            graph(tf.Graph)       : Result from _load_graph()
         Returns:
-            x(tf.Placeholder): NHWC input image tensor (batched)
-            y(dict): output(dict): {'box':A(N,M,4), 'class':A(N,M), 'score':A(N,M), 'num':M=A(N)}
+            x(tf.Placeholder)     : NHWC input image tensor (batched)
+            y(dict): output(dict) : {'box':A(N,M,4), 'class':A(N,M), 'score':A(N,M), 'num':M=A(N)}
         """
         x = None
         y = {}
@@ -364,7 +391,9 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
             #model='model4-drone-300x300',
             model='model',
             cmap={1:'drone', 2:'person'},
-            shape=(300,300,3)
+            shape=(300,300,3),
+            threshold=0.375,
+            threshold2=(0.125, 0.5)
             )
 
     if is_root and viz:
@@ -389,8 +418,6 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
 
         #res = app(img[..., ::-1])
         res = app.detect(img, is_bgr=True,
-                threshold=0.375,
-                threshold2=(0.125, 0.5)
                 )
 
         #msk = (res['score'] > 0.5)
