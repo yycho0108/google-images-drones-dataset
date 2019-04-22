@@ -40,13 +40,16 @@ class ObjectDetectorTF(object):
     Note:
         [1]: https://github.com/tensorflow/models/blob/master/research/object_detection/object_detection_tutorial.ipynb
     """
+
+    # human-friendly label map
     mmap_ = {
+            'coco' : 'ssd_mobilenet_v1_ppn_shared_box_predictor_300x300_coco14_sync_2018_07_03',
             'model2-drone-300x300' : '1voCDNghyKCNzk7Q9c4fzj23lW5jQtoTp'
             }
 
     def __init__(self,
             root='/tmp',
-            model='ssd_mobilenet_v1_ppn_shared_box_predictor_300x300_coco14_sync_2018_07_03',
+            model='model',
             gpu=0.0,
             cmap=None,
             shape=(300,300,3),
@@ -118,7 +121,7 @@ class ObjectDetectorTF(object):
     def detect(self, img,
             is_bgr=True,
             threshold=0.7,
-            threshold2=None, 
+            threshold2=None
             ):
         """
         Wrapper around ObjectDetectorTF.__call__() that handles convenience arguments,
@@ -356,7 +359,7 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
     Simple test script; operating on a directory
     """
     #app = ObjectDetectorTF()
-    app = ObjectDetectorTF(gpu=0.9,
+    app = ObjectDetectorTF(gpu=0.5,
             #model='model2-drone-300x300',
             #model='model4-drone-300x300',
             model='model',
