@@ -17,7 +17,7 @@ if [ "$AUTOPATH" -ne "0" ]; then
     CKPT_LATEST="${CKPT_LATEST#\"}"
     TRAINED_CKPT_PREFIX="${TRAIN_PATH}/${CKPT_LATEST}"
 else
-    TRAINED_CKPT_PREFIX="/tmp/model.ckpt-24519"
+    TRAINED_CKPT_PREFIX="/tmp/model.ckpt-123125"
 fi
 
 echo "USING CHECKPOINT : $TRAINED_CKPT_PREFIX"

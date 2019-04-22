@@ -19,7 +19,7 @@ def crop_box(img, box, margin=0.0):
     h, w = img.shape[:2]
     if margin > 0:
         box = expand_box(box, margin)
-    box = np.clip(box, 0, 1)
+    box = np.clip(box, 0.0, 1.0)
     y0,x0,y1,x1 = np.multiply(box, [h,w,h,w]).astype(np.int32)
     return img[y0:y1,x0:x1], box
 
@@ -149,8 +149,8 @@ class ObjectDetectorTF(object):
             sup_clss = []
             sup_boxs = []
             for c, b in zip(cls[retry_msk], box[retry_msk]):
-                sub_img, sup_box = crop_box(img, box, margin=0.25)
-                sub_imgs.append(cv2.resize(sub_img, self.shape_))
+                sub_img, sup_box = crop_box(img, b, margin=0.25)
+                sub_imgs.append(cv2.resize(sub_img, self.shape_[:2][::-1]))
                 sup_boxs.append( sup_box )
                 sup_clss.append( c )
             sub_imgs = np.stack(sub_imgs, axis=0)
@@ -174,11 +174,12 @@ class ObjectDetectorTF(object):
                     new_cls.append( spc )
                     new_box.append( inner_box(spb, sbb) )
                     new_score.append( sbs )
+            new_box = np.reshape(new_box, (-1,4))
 
             # finalize result
-            fin_cls = np.concatenate([cls[good_msk], new_cls])
-            fin_box = np.concatenate([box[good_msk], new_box])
-            fin_score = np.concatenate([score[good_msk], new_score])
+            fin_cls = np.concatenate([cls[good_msk], new_cls], axis=0)
+            fin_box = np.concatenate([box[good_msk], new_box], axis=0)
+            fin_score = np.concatenate([score[good_msk], new_score], axis=0)
 
             return {k:v for (k,v) in zip(
                 ['class', 'box', 'score'],
@@ -282,7 +283,6 @@ def test_image(img='/tmp/image1.jpg'):
     """
     app = ObjectDetectorTF(model='model')
     img = cv2.imread(img)
-    h,w = img.shape[:2]
     res = app(img)
     msk = (res['score'] > 0.5)
 
@@ -303,11 +303,11 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
     Simple test script; operating on a directory
     """
     #app = ObjectDetectorTF()
-    app = ObjectDetectorTF(use_gpu=True,
+    app = ObjectDetectorTF(use_gpu=False,
             #model='model2-drone-640x640'
             #model='model4-drone-300x300'
             model='model',
-            cmap={1:'drone', 2:'person'}
+            cmap={1:'drone', 2:'person'},
             )
 
     if is_root:
@@ -330,18 +330,19 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
         if img is None:
             continue
 
-        h,w = img.shape[:2]
         #res = app(img[..., ::-1])
         res = app.detect(img, is_bgr=True,
-                threshold=0.7,
-                threshold2=(0.5, 0.85))
+                threshold=0.375,
+                threshold2=(0.125, 0.5)
+                )
 
-        msk = (res['score'] > 0.5)
+        #msk = (res['score'] > 0.5)
         #if np.count_nonzero(msk) <= 0:
         #    continue
-        cls   = res['class'][msk]
-        box   = res['box'][msk]
-        score = res['score'][msk]
+
+        cls   = res['class']
+        box   = res['box']
+        score = res['score']
 
         print('scores', score)
 
@@ -353,6 +354,7 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True):
         if k in [27, ord('q')]:
             break
     else:
+        # went through all images without interruption
         full=True
 
     if is_root:
@@ -374,7 +376,6 @@ def test_camera():
         if not ret:
             print('camera capture failed')
             break
-        h,w = img.shape[:2]
         t0 = time.time()
         res = app(img)
         t1 = time.time()
