@@ -86,7 +86,7 @@ class ObjectDetectorTF(object):
 
         # print configuration
         print("""
-        -- [Loading Object Detection Model] --
+        -- [Object Detection Model Config] --
         root       : {}
         model      : {}
         ckpt       : {}
@@ -201,11 +201,13 @@ class ObjectDetectorTF(object):
             sub_imgs = []
             sup_clss = []
             sup_boxs = []
-            for c, b in zip(cls[retry_msk], box[retry_msk]):
+            sup_scores = []
+            for c, b, s in zip(cls[retry_msk], box[retry_msk], score[retry_msk]):
                 sub_img, sup_box = crop_box(img, b, margin=0.25)
                 sub_imgs.append(cv2.resize(sub_img, self.shape_[:2][::-1]))
                 sup_boxs.append( sup_box )
                 sup_clss.append( c )
+                sup_scores.append( s )
             sub_imgs = np.stack(sub_imgs, axis=0)
             sub_res = self.__call__(sub_imgs) # TODO : consider `recursive` detection
 
@@ -213,8 +215,8 @@ class ObjectDetectorTF(object):
             new_box = []
             new_score = []
 
-            for (spc, spb, sbcs, sbbs, sbss) in zip(
-                    sup_clss, sup_boxs,
+            for (spc, spb, sps, sbcs, sbbs, sbss) in zip(
+                    sup_clss, sup_boxs, sup_scores,
                     sub_res['class'], sub_res['box'], sub_res['score']
                     ):
                 for (sbc, sbb, sbs) in zip(sbcs, sbbs, sbss):
@@ -226,13 +228,15 @@ class ObjectDetectorTF(object):
                         continue
                     new_cls.append( spc )
                     new_box.append( inner_box(spb, sbb) )
-                    new_score.append( sbs )
+                    new_score.append( ( sps, sbs ) )
             new_box = np.reshape(new_box, (-1,4))
 
             # finalize result
             fin_cls = np.concatenate([cls[good_msk], new_cls], axis=0)
             fin_box = np.concatenate([box[good_msk], new_box], axis=0)
-            fin_score = np.concatenate([score[good_msk], new_score], axis=0)
+            fin_score = list( score[good_msk] )
+            fin_score.extend( new_score )
+            #np.concatenate([score[good_msk], new_score], axis=0)
 
             return {k:v for (k,v) in zip(
                 ['class', 'box', 'score'],
@@ -381,7 +385,7 @@ def test_image(img='/tmp/image1.jpg'):
     cls   = res['class'][msk]
     box   = res['box'][msk]
     score = res['score'][msk]
-    print 'score', score
+    print('score', score)
 
     for box_, cls_ in zip(box, cls):
         #ry0,rx0,ry1,rx1 = box_ # relative
@@ -400,8 +404,8 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
             #model='model4-drone-300x300',
             model='model',
             cmap={1:'drone', 2:'person'},
-            threshold=0.5,
-            threshold2=(0.25, 0.625)
+            threshold=0.375,
+            threshold2=(0.25, 0.5)
             )
 
     if is_root and viz:
@@ -438,7 +442,7 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
         print('scores', score)
         if viz:
             for box_, cls_, val_ in zip(box, cls, score):
-                draw_bbox(img, box_, '{}:{:.2f}'.format(cls_,val_))
+                draw_bbox(img, box_, '{}:{}'.format(cls_,val_))
             cv2.imshow('win', img)
             k = cv2.waitKey(0)
             if k in [27, ord('q')]:
