@@ -3,19 +3,21 @@
 AUTOPATH=0
 INPUT_TYPE=image_tensor
 EXPORT_DIR='/tmp/model'
-TRAIN_PATH='/tmp/train/5' # SUPPLY TRAIN_PATH IF AUTOPATH==0
 TF_MODELS_PATH="${HOME}/Repos/models/research/"
 
-# Manual Path
-PIPELINE_CONFIG_PATH='/tmp/pipeline.config'
-TRAINED_CKPT_PREFIX="/tmp/model.ckpt-150229"
-# Auto Path
 if [ "$AUTOPATH" -eq "1" ]; then
+    # Auto Path
+    TRAIN_PATH="$(find /tmp/train -maxdepth 1 -printf '%T+ %p\n' | sort -r | head -n 1| cut -d ' ' -f2)"
+    echo "TRAIN_PATH : ${TRAIN_PATH}"
     CKPT_LATEST="$(head ${TRAIN_PATH}/checkpoint -n 1 | awk '{print $2}')"
     CKPT_LATEST="${CKPT_LATEST%\"}"
     CKPT_LATEST="${CKPT_LATEST#\"}"
     TRAINED_CKPT_PREFIX="${TRAIN_PATH}/${CKPT_LATEST}"
     PIPELINE_CONFIG_PATH="${TRAIN_PATH}/pipeline.config"
+else
+    # Manual Path
+    PIPELINE_CONFIG_PATH='/tmp/train/7/pipeline.config'
+    TRAINED_CKPT_PREFIX="/tmp/train/7/model.ckpt-200000"
 fi
 
 echo "USING CHECKPOINT : $TRAINED_CKPT_PREFIX"

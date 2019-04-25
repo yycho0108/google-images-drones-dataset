@@ -404,8 +404,8 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
             #model='model4-drone-300x300',
             model='model',
             cmap={1:'drone', 2:'person'},
-            threshold=0.375,
-            threshold2=(0.25, 0.5)
+            threshold=0.5,
+            threshold2=(0.375, 0.7)
             )
 
     if is_root and viz:

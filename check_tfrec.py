@@ -1,6 +1,8 @@
 import tensorflow as tf
+import numpy as np
 import sys
 import cv2
+import glob
 
 def draw_box(img, box):
     x0, y0, x1, y1 = box[:4]
@@ -15,7 +17,14 @@ def draw_box(img, box):
 
 def main():
     tf.enable_eager_execution()
-    rec = tf.data.TFRecordDataset('./drone.record')
+    #rec_files = glob.glob('./records/*')
+    rec_files = glob.glob('../coco/record/*')
+    #print rec_files
+    np.random.shuffle(rec_files)
+    rec_file = rec_files[0]
+    print('\trecord file : {}'.format(rec_file))
+    rec = tf.data.TFRecordDataset(rec_file)
+
     #rec = tf.data.TFRecordDataset('./drone-net.record')
     #rec = tf.data.TFRecordDataset('./ximg.record')
     #rec = tf.data.TFRecordDataset('./png.record')

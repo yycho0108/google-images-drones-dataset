@@ -19,8 +19,14 @@ def split_tfrecord(tfrecord_path, split_size, out_dir='./records'):
             except tf.errors.OutOfRangeError: break
 
 def main():
-    rec = './ximg.record'
-    split_tfrecord(rec, 1024)
+    recs = [
+            './archive/drone.record',
+            './archive/drone-net.record',
+            './archive/ximg.record',
+            './archive/png.record'
+            ]
+    for rec in recs:
+        split_tfrecord(rec, 256)
 
 if __name__ == '__main__':
     main()

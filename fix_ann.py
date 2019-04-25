@@ -320,14 +320,14 @@ def main():
     #ok_gui(droot, f_lbl, f_idx, fsr)
     #bbox_gui(droot, f_lbl, fsr)
 
-    if not os.path.exists('/tmp/ximg'):
-        os.makedirs('/tmp/ximg')
-    for (i, f) in enumerate(fsn):
-        l = open(os.path.join(droot, f)).readlines()
-        imf = l[0][:-1]
-        shutil.copyfile(imf,
-                os.path.join('/tmp/ximg', '{}.jpg'.format(i))
-                )
+    #if not os.path.exists('/tmp/ximg'):
+    #    os.makedirs('/tmp/ximg')
+    #for (i, f) in enumerate(fsn):
+    #    l = open(os.path.join(droot, f)).readlines()
+    #    imf = l[0][:-1]
+    #    shutil.copyfile(imf,
+    #            os.path.join('/tmp/ximg', '{}.jpg'.format(i))
+    #            )
 
 if __name__ == "__main__":
     main()

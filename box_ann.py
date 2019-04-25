@@ -165,7 +165,7 @@ def check_box(app, img, boxs, scores, thresh1, thresh2, shape, viz=True):
 def main(_):
     app    = ObjectDetectorTF(
             root=FLAGS.root,
-            use_gpu=FLAGS.use_gpu,
+            gpu=FLAGS.use_gpu,
             model=FLAGS.model
             )
     imgdir = FLAGS.img_dir
