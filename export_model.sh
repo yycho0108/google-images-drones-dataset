@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # TODO : accept arguments
-AUTOPATH=0
+AUTOPATH=1
 INPUT_TYPE=image_tensor
 EXPORT_DIR='/tmp/model'
 TF_MODELS_PATH="${HOME}/Repos/models/research/"

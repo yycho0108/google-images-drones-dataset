@@ -425,6 +425,7 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
                 break
 
         img = cv2.imread(f)
+        img = img[:,188:-188]
         if img is None:
             continue
 
@@ -442,6 +443,7 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
         print('scores', score)
         if viz:
             for box_, cls_, val_ in zip(box, cls, score):
+                print img.shape
                 draw_bbox(img, box_, '{}:{}'.format(cls_,val_))
             cv2.imshow('win', img)
             k = cv2.waitKey(0)

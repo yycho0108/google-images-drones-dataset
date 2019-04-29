@@ -1,8 +1,406 @@
 item {
     id : 1
-    name: 'drone'
+    name: "drone"
+    display_name: "drone"
+}
+
+item {
+  name: "person"
+  id: 0
+  display_name: "background"
 }
 item {
-    id : 2
-    name: 'person'
+  name: "bicycle"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "car"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "motorcycle"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "airplane"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "bus"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "train"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "truck"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "boat"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "traffic light"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "fire hydrant"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "stop sign"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "parking meter"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "bench"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "bird"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "cat"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "dog"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "horse"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "sheep"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "cow"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "elephant"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "bear"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "zebra"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "giraffe"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "backpack"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "umbrella"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "handbag"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "tie"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "suitcase"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "frisbee"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "skis"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "snowboard"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "sports ball"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "kite"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "baseball bat"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "baseball glove"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "skateboard"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "surfboard"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "tennis racket"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "bottle"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "wine glass"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "cup"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "fork"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "knife"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "spoon"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "bowl"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "banana"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "apple"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "sandwich"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "orange"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "broccoli"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "carrot"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "hot dog"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "pizza"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "donut"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "cake"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "chair"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "couch"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "potted plant"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "bed"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "dining table"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "toilet"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "tv"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "laptop"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "mouse"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "remote"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "keyboard"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "cell phone"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "microwave"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "oven"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "toaster"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "sink"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "refrigerator"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "book"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "clock"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "vase"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "scissors"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "teddy bear"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "hair drier"
+  id: 0
+  display_name: "background"
+}
+item {
+  name: "toothbrush"
+  id: 0
+  display_name: "background"
 }

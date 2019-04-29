@@ -18,7 +18,7 @@ def draw_box(img, box):
 def main():
     tf.enable_eager_execution()
     #rec_files = glob.glob('./records/*')
-    rec_files = glob.glob('../coco/record/*')
+    rec_files = glob.glob('../coco/record/coco_train.record-*')
     #print rec_files
     np.random.shuffle(rec_files)
     rec_file = rec_files[0]
@@ -61,6 +61,8 @@ def main():
         xmax = tf.sparse.to_dense(rec['image/object/bbox/xmax']).numpy()
         ymin = tf.sparse.to_dense(rec['image/object/bbox/ymin']).numpy()
         ymax = tf.sparse.to_dense(rec['image/object/bbox/ymax']).numpy()
+        print rec['image/object/class/text']
+        print rec['image/object/class/label']
 
         jpeg = tf.image.decode_jpeg(rec['image/encoded'])
         img = jpeg.numpy()
