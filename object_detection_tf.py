@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import numpy as np
 import os
 import six.moves.urllib as urllib
@@ -228,7 +230,8 @@ class ObjectDetectorTF(object):
                         continue
                     new_cls.append( spc )
                     new_box.append( inner_box(spb, sbb) )
-                    new_score.append( ( sps, sbs ) )
+                    #new_score.append( ( sps, sbs ) )
+                    new_score.append(sps)
             new_box = np.reshape(new_box, (-1,4))
 
             # finalize result
@@ -400,9 +403,9 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
     """
     #app = ObjectDetectorTF()
     app = ObjectDetectorTF(gpu=0.5,
-            #model='model2-drone-300x300',
+            model='model2-drone-300x300',
             #model='model4-drone-300x300',
-            model='model',
+            #model='model',
             cmap={1:'drone', 2:'person'},
             threshold=0.5,
             threshold2=(0.375, 0.7)
@@ -425,7 +428,6 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
                 break
 
         img = cv2.imread(f)
-        img = img[:,188:-188]
         if img is None:
             continue
 
@@ -443,8 +445,7 @@ def test_images(imgdir, recursive=True, is_root=True, shuffle=True, viz=True):
         print('scores', score)
         if viz:
             for box_, cls_, val_ in zip(box, cls, score):
-                print img.shape
-                draw_bbox(img, box_, '{}:{}'.format(cls_,val_))
+                draw_bbox(img, box_, '{}:{:.2f}%'.format(cls_,int(100.*val_)))
             cv2.imshow('win', img)
             k = cv2.waitKey(0)
             if k in [27, ord('q')]:
@@ -497,10 +498,11 @@ def main():
 
     #imgdir = '/tmp/simg'
     img_dir = os.path.expanduser(
-            #'~/Repos/drone-net/image'
+            #'~/libs/drone-net/image/'
+            '/media/ssd/datasets/drones/archive/selfies'
             #'/media/ssd/datasets/drones/data-png/ quadcopter'
             #"/media/ssd/datasets/youtube_box/train/0"
-            '/tmp/selfies'
+            #'/tmp/selfies'
             )
 
     #test_images('/media/ssd/datasets/drones/archive/data-png')

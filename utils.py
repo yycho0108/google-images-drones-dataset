@@ -1,3 +1,5 @@
+#!/usr/bin/env python2
+
 import numpy as np
 import cv2
 
@@ -67,6 +69,35 @@ def convert_to_pixels(image_size, bounding_box):
 			int(bounding_box[2] * image_size[0]),
 			int(bounding_box[3] * image_size[1]))
 
+def put_text(img, box, txt, **args):
+    """ Draw text inside the box (xywh) """
+    ks_ts = ['text', 'fontFace', 'fontScale', 'thickness']
+    txargs = dict(
+            fontFace = cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale = 1.,
+            color = (255,0,0)
+            )
+    txargs.update(args)
+
+    sz,bl = cv2.getTextSize(txt, **{k:v for (k,v) in txargs.items() if k in ks_ts})
+
+    w = box[2]
+    h = box[3]
+    
+    fs2 = min(float(w)/sz[0], float(h)/sz[1])
+    txargs.update(args)
+    txargs['fontScale'] = fs2
+
+    cv2.rectangle(img,
+            tuple([int(e) for e in [box[0], box[1]]]),
+            tuple([int(e) for e in [box[0]+w, box[1]+h]]),
+            txargs['color'], -1)
+
+    txargs['color'] = (255,255,255)
+    cv2.putText(img, txt,
+            org = tuple([int(e) for e in [box[0], box[1]+box[3]] ]),
+            **txargs)
+
 def draw_bbox(img, box, cls=None, color=(255,0,0) ):
     """ Draw a yxyx-encoded box """
     h,w = img.shape[:2]
@@ -76,8 +107,15 @@ def draw_bbox(img, box, cls=None, color=(255,0,0) ):
     y0,x0,y1,x1 = yxyx
     cv2.rectangle(img, (x0,y0), (x1,y1), color, thickness=2)
     if cls is not None:
-        org = ( max(x0,0), min(y1,h) )
-        cv2.putText(img, cls, org, 
-                cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,255,255),
-                1, cv2.LINE_AA
+        tx, ty = max(x0,0), max(y0-(0.1*(y1-y0)), 0)
+        txt_box = (tx, ty, 0.5*(x1-x0), 0.1*(y1-y0))
+        # org = ( max(x0,0), min(y1,h) )
+        put_text(img, txt_box, cls,
+                color=color,
+                thickness=1 # TODO : auto-thickness
                 )
+        # org = ( max(x0,0), min(y1,h) )
+        # cv2.putText(img, cls, org, 
+        #         cv2.FONT_HERSHEY_SIMPLEX, 1.0, color,
+        #         1, cv2.LINE_AA
+        #         )

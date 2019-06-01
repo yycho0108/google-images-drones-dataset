@@ -2,6 +2,8 @@
 
 Drone Detection Dataset from Google Images
 
+![demo](./figs/eg2.png)
+
 ## 1. Download Raw Images
 
 See [google-images-download][1] for details.
